@@ -28,8 +28,7 @@
     "menu": {
         "isRoot": false,
         "items": [
-            "buttonsymbols",
-            "fixsymbolnames"
+            "buttonsymbols"
         ],
         "title": "Button Symbols"
     }
