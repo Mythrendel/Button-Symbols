@@ -43,6 +43,6 @@ The button position is calculated relative to its parent group. If it is not ins
 ## Future Plans
 
 * Have an action to insert a button that conforms to the specifications this plugin requires.
-* Handling of events/Actions: Currently I was unable to get the TextChanged and many other events (Actions) to trigger my code. Only a couple of the ones I tried worked so until that is patched you will need to run the plugin manually. As far as I can tell, once that works in Sketch I will be able to update this plugin to automatically respond as you change values.
-* Icons in the button. (I have contacted Bohemian about ths issue.)
+* Handling of events/Actions: Currently I was unable to get the TextChanged and many other events (Actions) to trigger my code. Only a couple of the ones I tried worked so until that is patched you will need to run the plugin manually. As far as I can tell, once that works in Sketch I will be able to update this plugin to automatically respond as you change values. (I have contacted Bohemian about ths issue.)
+* Icons in the button.
 * Multi-line buttons (very very very low priority and maybe never - why is your button text so long or your button so small?!?!?! Maybe time to rethink your UX on that)
