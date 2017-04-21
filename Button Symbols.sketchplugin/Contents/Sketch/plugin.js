@@ -102,7 +102,7 @@ function _updateButtonSymbols(layers) {
 
             // Store the master symbol's label text
             var defaultSymbolTextLayerValue = labelLayer.stringValue();
-            if(labelTextOverride == '') {
+            if(labelTextOverride == '' || labelTextOverride == null) {
                 labelTextOverride = defaultSymbolTextLayerValue;
             }
 
@@ -123,21 +123,33 @@ function _updateButtonSymbols(layers) {
             var centerToParentV = false;
             positionX = positionX.toString().trim();
             positionY = positionY.toString().trim();
-            if(positionX == 'center') {
-                centerToParentH = true;
-            } else {
-                positionX = parseInt(positionX, 10);
-                if(!positionX) {
-                    maintainCenterH = true;
-                }
+            switch(positionX) {
+                case 'center':
+                    centerToParentH = true;
+                    break;
+                case 'left':
+                case 'right':
+                    break;
+                default:
+                    positionX = parseInt(positionX, 10);
+                    if(!positionX) {
+                        maintainCenterH = true;
+                    }
+                    break;
             }
-            if(positionY == 'center') {
-                centerToParentV = true;
-            } else {
-                positionY = parseInt(positionY, 10);
-                if(!positionY) {
-                    maintainCenterV = true;
-                }
+            switch(positionX) {
+                case 'center':
+                    centerToParentV = true;
+                    break;
+                case 'top':
+                case 'bottom':
+                    break;
+                default:
+                    positionY = parseInt(positionY, 10);
+                    if(!positionY) {
+                        maintainCenterV = true;
+                    }
+                    break;
             }
 
             var currentSymbolWidth = symbol.frame().width();
@@ -176,12 +188,25 @@ function _updateButtonSymbols(layers) {
             } else if(centerToParentH) {
                 // Find half the width of the container and subtract half the width of the button
                 positionX = (group.frame().width() / 2) - (newSymbolWidth / 2);
-            }
-            if(positionX > 0) {
-                // Offset is from left - do nothing special because this is the standard anchor point Sketch uses on resize
-            } else if(positionX < 0) {
-                // Offset is from right; adjust based on current coordinate space
-                positionX = (group.frame().width() - newSymbolWidth) + positionX;
+            } else {
+                switch(positionX) {
+                    case 'left':
+                        // Position flush with left edge of parent container
+                        positionX = 0;
+                        break;
+                    case 'right':
+                        // Use (width of container - button width) to position button flush to right edge of parent container
+                        positionX = group.frame().width() - newSymbolWidth;
+                        break;
+                    default:
+                        if(positionX > 0) {
+                            // Offset is from left - do nothing special because this is the standard anchor point Sketch uses on resize
+                        } else if(positionX < 0) {
+                            // Offset is from right; adjust based on current coordinate space
+                            positionX = (group.frame().width() - newSymbolWidth) + positionX;
+                        }
+                        break;
+                }
             }
 
             if(maintainCenterV) {
@@ -190,11 +215,25 @@ function _updateButtonSymbols(layers) {
             } else if(centerToParentV) {
                 // Find half the height of the container and subtract half the height of the button
                 positionY = (group.frame().height() / 2) - (newSymbolHeight / 2);
-            } else if(positionY > 0) {
-                // Offset is from top - do nothing special because this is the standard anchor point Sketch uses on resize
-            } else if(positionY < 0) {
-                // Offset is from bottom ; adjust based on current coordinate space
-                positionY = (group.frame().height() - newSymbolHeight) + positionY;
+            } else {
+                switch(positionY) {
+                    case 'top':
+                        // Position flush with top of parent container
+                        positionY = 0;
+                        break;
+                    case 'bottom':
+                        // Use (height of container - button height) to position button flush to bottom of parent container
+                        positionY = group.frame().height() - newSymbolHeight;
+                        break;
+                    default:
+                        if(positionY > 0) {
+                            // Offset is from top - do nothing special because this is the standard anchor point Sketch uses on resize
+                        } else if(positionY < 0) {
+                            // Offset is from bottom ; adjust based on current coordinate space
+                            positionY = (group.frame().height() - newSymbolHeight) + positionY;
+                        }
+                        break;
+                }
             }
 
             symbol.frame().setX(positionX);
@@ -222,9 +261,9 @@ function onSelectionChanged(context) {
     // Do nothing for now - maybe we automate this later
     return;
     /*var action = context.actionContext;
-    var doc = action.document;
-    var layers = action.newSelection;
-    _updateButtonSymbols(layers);*/
+     var doc = action.document;
+     var layers = action.newSelection;
+     _updateButtonSymbols(layers);*/
 }
 
 /**
@@ -236,8 +275,8 @@ function onTextChanged(context) {
     // todo - once this method will actually run we can automate it to update the button symbol the text is part of.
     return;
     /*var action = context.actionContext;
-    var doc = action.document;
-    doc.showMessage('Text changed in document.');*/
+     var doc = action.document;
+     doc.showMessage('Text changed in document.');*/
 }
 
 /**
