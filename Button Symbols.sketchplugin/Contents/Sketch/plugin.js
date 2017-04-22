@@ -137,7 +137,7 @@ function _updateButtonSymbols(layers) {
                     }
                     break;
             }
-            switch(positionX) {
+            switch(positionY) {
                 case 'center':
                     centerToParentV = true;
                     break;
@@ -307,3 +307,7 @@ function getSymbolForLayer(layer) {
 
     return null;
 }
+
+// Code for debugging as Sketch script (vs installed plugin)
+//var selectedLayers = context.selection;
+//_updateButtonSymbols(selectedLayers);

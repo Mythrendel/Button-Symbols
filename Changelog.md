@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.1.1
+**Date:** 2017-04-22
+
+Patch release.
+ 
+* Fixed an issue where the Position-X value when set to 'center' would cause it to behave as if the Position-Y value were also set to 'center'.
+
 ## v1.1.0
 **Date:** 2017-04-21
 
