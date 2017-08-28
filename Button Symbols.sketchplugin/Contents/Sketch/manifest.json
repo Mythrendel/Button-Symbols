@@ -1,11 +1,11 @@
 {
     "name": "Button Symbols",
-    "description": "A plugin to make buttons easier to customize in Sketch (for Sketch 43.2+)",
+    "description": "A plugin to make buttons easier to customize in Sketch (for Sketch 46.2+)",
     "author": "Freckle",
     "homepage": "https://github.com/mwhite05/Button-Symbols",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "identifier": "io.freckle.sketch.button-symbols",
-    "compatibleVersion": "43.2",
+    "compatibleVersion": "46.2",
     "commands": [
         {
             "script": "plugin.js",

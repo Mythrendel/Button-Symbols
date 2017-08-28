@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.2.0
+**Date:** 2017-08-28
+
+* Updated the plugin for Sketch 44.0+ by patching an issue where the layer overrides are no longer returned as an object wrapped by an array. They are now returned as just the object itself.
+
 ## v1.1.1
 **Date:** 2017-04-22
 

@@ -22,13 +22,13 @@ function _updateButtonSymbols(layers) {
             var masterChildren = symbolMaster.children();
             var masterChildrenCount = masterChildren.count();
 
-            var allOverrides = layer.overrides();
+            // 2017-28-08 :: After waiting a while to fix this, turns out that layer.overrides() now returns just the overrides for this layer vs how it returned them in Sketch 43.1
+            var overrides = layer.overrides();
 
-            if(!allOverrides || !allOverrides.count()) {
+            if(!overrides) {
                 continue; // No point continuing - no overrides set
             }
 
-            var overrides = allOverrides.objectForKey(0); // key of 0 assumes single level of depth for symbol
             // NOTE: If an offset is positive the offset anchor is either top or left. If an offset is negative the offset anchor is bottom or right.
             var positionX = 0;
             var positionY = 0;
@@ -44,9 +44,9 @@ function _updateButtonSymbols(layers) {
             // Loop the children of the symbol to find the layers that provide the override values we want.
             for(var i = 0; i < masterChildrenCount; i++) {
                 var childLayer = masterChildren[i];
-                var childName = childLayer.name();
-                var childObjectId = childLayer.objectID();
-                switch(childName + '') {
+                var childName = childLayer.name() + '';
+                var childObjectId = childLayer.objectID() + '';
+                switch(childName) {
                     case 'Label':
                         templateLabelWidth = childLayer.frame().width();
                         templateLabelHeight = childLayer.frame().height();
