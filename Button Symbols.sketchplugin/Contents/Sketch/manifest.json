@@ -3,8 +3,9 @@
     "description": "A plugin to make buttons easier to customize in Sketch (for Sketch 46.2+)",
     "author": "Freckle",
     "homepage": "https://github.com/mwhite05/Button-Symbols",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "identifier": "io.freckle.sketch.button-symbols",
+    "appcast": "https://api.sketchpacks.com/v1/plugins/io.freckle.sketch.button-symbols/appcast",
     "compatibleVersion": "46.2",
     "commands": [
         {
