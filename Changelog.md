@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.2.3
+**Date:** 2017-08-29
+
+* Much headdeskery. Patched an issue where the install link did not actually point to this plugin.
+
 ## v1.2.2
 **Date:** 2017-08-29
 

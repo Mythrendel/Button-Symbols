@@ -11,7 +11,7 @@ A plugin that uses symbols and symbol overrides to make buttons insanely easy to
 
 ## Install with Sketchpacks
 
-<a href="https://sketchpacks.com/YOUR_NAME/PLUGIN_NAME/install">
+<a href="https://sketchpacks.com/mwhite05/Button-Symbols/install">
   <img width="160" height="41" src="http://sketchpacks-com.s3.amazonaws.com/assets/badges/sketchpacks-badge-install.png" >
 </a>
 
