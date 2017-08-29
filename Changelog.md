@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.2.2
+**Date:** 2017-08-29
+
+* Updated the readme to better outline this plugin when viewed in the Sketchpacks installer (only the first sentence of the readme file shows up there).
+* Added the Install with Sketchpacks badge to the readme file. 
+
+## v1.2.1
+**Date:** 2017-08-29
+
+* Added support for Sketchpacks in the manifest.json configuration file.
+
 ## v1.2.0
 **Date:** 2017-08-28
 

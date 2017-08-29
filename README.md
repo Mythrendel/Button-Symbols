@@ -1,5 +1,5 @@
 # Button-Symbols
-A plugin to make buttons easier to customize in Sketch (for Sketch 46.2+)
+A plugin that uses symbols and symbol overrides to make buttons insanely easy to re-label, re-size, position relative to parent container, and more. Supported in Sketch 46.2+
 
 ## What can this plugin do for me?
 
@@ -7,6 +7,13 @@ A plugin to make buttons easier to customize in Sketch (for Sketch 46.2+)
 	* Change the label (using symbol override)
 	* Change the horizontal and vertical padding (does not use weird layer names for this!)
 	* Change the relative position for the button (anchor to top, left, right, bottom, center)
+    * Change the symbol itself to do things like re-color or change font in all button instances at once.
+
+## Install with Sketchpacks
+
+<a href="https://sketchpacks.com/YOUR_NAME/PLUGIN_NAME/install">
+  <img width="160" height="41" src="http://sketchpacks-com.s3.amazonaws.com/assets/badges/sketchpacks-badge-install.png" >
+</a>
 
 ## Usage / Instructions
 
