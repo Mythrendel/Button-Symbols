@@ -17,14 +17,14 @@ A plugin that uses symbols and symbol overrides to make buttons insanely easy to
 
 ## Usage / Instructions
 
-Copy the button symbol from the provided Sketch file or create a symbol that contains the following **text layers** (named exactly these things and preferably in this order):
+Copy the button symbol from the provided Sketch file or create a symbol that contains the following layers (named exactly these things and preferably in this order):
 
-* Label
-* Background
-* Padding-H
-* Padding-V
-* Position-X
-* Position-Y
+* Label (text layer)
+* Background (shape layer)
+* Padding-H (text layer)
+* Padding-V (text layer)
+* Position-X (text layer)
+* Position-Y (text layer)
 
 1. Insert an instance of the button symbol somewhere in your document.
 2. Select the instance of that button symbol.
