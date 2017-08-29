@@ -162,8 +162,8 @@ function _updateButtonSymbols(layers) {
             labelLayer.setStringValue(labelTextOverride);
 
             // Get the updated width and height of the label text
-            labelWidth = labelLayer.frame().width();
-            labelHeight = labelLayer.frame().height();
+            var labelWidth = labelLayer.frame().width();
+            var labelHeight = labelLayer.frame().height();
 
             // Restore the master symbol's label text to its initial value
             labelLayer.setStringValue(defaultSymbolTextLayerValue);

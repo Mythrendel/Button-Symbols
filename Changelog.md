@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.2.x
+**Date:** TBD
+
+* Improved readme by specifying that the layers for the symbol must be text layers.
+* Syntax correction where variables were implicitly declared.
+
 ## v1.2.3
 **Date:** 2017-08-29
 

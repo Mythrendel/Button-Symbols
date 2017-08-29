@@ -17,7 +17,7 @@ A plugin that uses symbols and symbol overrides to make buttons insanely easy to
 
 ## Usage / Instructions
 
-Copy the button symbol from the provided Sketch file or create a symbol that contains the following layers (named exactly these things and preferably in this order):
+Copy the button symbol from the provided Sketch file or create a symbol that contains the following **text layers** (named exactly these things and preferably in this order):
 
 * Label
 * Background
