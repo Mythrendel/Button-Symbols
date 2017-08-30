@@ -21,7 +21,9 @@ Note: The demo makes use of a Symbol.sketch file available via the <a href="http
 
 <p><img src="https://github.com/mwhite05/Button-Symbols/blob/master/Button Symbols Plugin Demo-175.gif?raw=true" alt="Button Symbols Plugin Demo"></p>
 
-<p>The above gif is exported at 175% speed. To see a slower version <a href="https://github.com/mwhite05/Button-Symbols/blob/master/Button Symbols Plugin Demo.mp4?raw=true">view it here</a>.</p>
+Near the end of the gif I show how the position works relative to the group. At this time, the button itself is considered part of the group so if the button is outside the area you want to position inside of then you need to move the button within that area before running the plugin. Otherwise the button ends up being used to position itself which has some odd side effects.
+
+The above gif is exported at 175% speed. To see a slower version <a href="https://github.com/mwhite05/Button-Symbols/blob/master/Button Symbols Plugin Demo.mp4?raw=true">view it here</a>.
 
 ## Usage / Instructions
 
