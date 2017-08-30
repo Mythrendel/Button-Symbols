@@ -7,6 +7,7 @@
 * Added a new Symbol.sketch file that makes it very easy to get a functional button symbol for use in your own sketch files.
 * Improved readme by specifying what type of layer each special layer in the button symbol must be.
 * Syntax correction where variables were implicitly declared.
+* Added a new idea to the future plans section of the readme.
 
 ## v1.2.3
 **Date:** 2017-08-29
