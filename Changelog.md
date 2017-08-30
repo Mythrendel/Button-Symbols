@@ -3,7 +3,9 @@
 ## v1.2.x
 **Date:** TBD
 
-* Improved readme by specifying that the layers for the symbol must be text layers.
+* Added a demo gif to the readme page.
+* Added a new Symbol.sketch file that makes it very easy to get a functional button symbol for use in your own sketch files.
+* Improved readme by specifying what type of layer each special layer in the button symbol must be.
 * Syntax correction where variables were implicitly declared.
 
 ## v1.2.3
