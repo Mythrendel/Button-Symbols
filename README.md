@@ -25,6 +25,10 @@ Near the end of the gif I show how the position works relative to the group. At 
 
 The above gif is exported at 175% speed. To see a slower version <a href="https://github.com/mwhite05/Button-Symbols/blob/master/Button Symbols Plugin Demo.mp4?raw=true">view it here</a>.
 
+## Use Symbol Swapping to Avoid Nested Button Symbols
+
+<p><img src="https://github.com/mwhite05/Button-Symbols/blob/master/Symbol Swapping Demo.gif?raw=true" alt="Symbol Swapping Demo"></p>
+
 ## Usage / Instructions
 
 Copy the button symbol from the provided Sketch file or create a symbol that contains the following layers (named exactly these things and preferably in this order):
