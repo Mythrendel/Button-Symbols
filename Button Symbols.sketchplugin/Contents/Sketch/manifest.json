@@ -3,7 +3,7 @@
     "description": "A plugin to make buttons easier to customize in Sketch (for Sketch 46.2+)",
     "author": "Freckle",
     "homepage": "https://github.com/mwhite05/Button-Symbols",
-    "version": "1.2.3",
+    "version": "1.2.4-alpha.1",
     "identifier": "io.freckle.sketch.button-symbols",
     "appcast": "https://api.sketchpacks.com/v1/plugins/io.freckle.sketch.button-symbols/appcast",
     "compatibleVersion": "46.2",
@@ -11,24 +11,29 @@
         {
             "script": "plugin.js",
             "shortcut": "cmd j",
-            "name": "Button Symbols",
-            "identifier": "buttonsymbols",
+            "name": "Update Selected",
+            "identifier": "buttonsymbols_update",
             "handler": "command_updateButtonSymbols"
         },
         {
             "script": "plugin.js",
+            "shortcut": "ctrl shift j",
+            "name": "Insert Symbol",
+            "identifier": "buttonsymbols_insert",
+            "handler": "command_insertButtonSymbol"
+        },
+        {
+            "script": "plugin.js",
             "handlers": {
-                "actions": {
-                    "SelectionChanged.finish": "onSelectionChanged",
-                    "TextChanged.finish": "onTextChanged"
-                }
+                "actions": {}
             }
         }
     ],
     "menu": {
         "isRoot": false,
         "items": [
-            "buttonsymbols"
+            "buttonsymbols_update",
+            "buttonsymbols_insert"
         ],
         "title": "Button Symbols"
     }

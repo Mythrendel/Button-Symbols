@@ -1,10 +1,10 @@
 # Changelog
 
-## v1.2.x
+## v1.2.4.alpha.1
 **Date:** TBD
 
+* Added a new Symbol.sketch file as a resource that the plugin can use to insert a properly configured button master symbol.
 * Added a demo gif to the readme page.
-* Added a new Symbol.sketch file that makes it very easy to get a functional button symbol for use in your own sketch files.
 * Improved readme by specifying what type of layer each special layer in the button symbol must be.
 * Syntax correction where variables were implicitly declared.
 * Added a new idea to the future plans section of the readme.
