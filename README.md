@@ -61,10 +61,17 @@ The button position is calculated relative to its parent group. If it is not ins
 
 * **Position-Y:** Set this to a positive number to position the button relative to the top edge of its offset container. Use a negative number to position relative to the bottom edge of the offset container. Set to the word `center` to vertically center the button within its offset container. Leave blank to manually position the button. Any label height changes made when Position-Y is blank will anchor the resize from the vertical center. Set to the word `top` or `bottom` to position top or bottom edge of button flush with parent container's top or bottom edge.
 
-## Future Plans
+## Work in Progress
+
+See [1.2.4-alpha.1](https://github.com/mwhite05/Button-Symbols/releases/tag/1.2.4-alpha.1)
 
 * Have an action to insert a button that conforms to the specifications this plugin requires (the button you get from Symbol.sketch).
+* Support "no label" buttons by treating a label override of only space characters in a special way.
+* Support icons in the button. (Work in progress)
 * Support different padding on top vs bottom and left vs right with a format like Padding-H: 10,20 or 10:20.
+* Support stretchy buttons that can pin to left and right or top and bottom with a format like: Position-X: 10,10 or 10:10
+
+## Future Plans
+
 * Handling of events/Actions: Currently I was unable to get the TextChanged and many other events (Actions) to trigger my code. Only a couple of the ones I tried worked so until that is patched you will need to run the plugin manually. As far as I can tell, once that works in Sketch I will be able to update this plugin to automatically respond as you change values. (I have contacted Bohemian about ths issue.)
-* Icons in the button.
 * Multi-line buttons (very very very low priority and maybe never - why is your button text so long or your button so small?!?!?! Maybe time to rethink your UX on that)

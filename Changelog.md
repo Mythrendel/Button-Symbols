@@ -1,7 +1,13 @@
 # Changelog
 
-## v1.2.4.alpha.1
+## v1.3.0-alpha.1
 **Date:** TBD
+
+* Code cleanup to divide it into multiple files for better organization and easier maintenance of this plugin.
+* Improved the bundled symbol by changing the font in the default button to use Verdana instead of Open Sans and adjusted the name of the bundled symbol to "ButtonSymbols/Primary" (instead of just "Button").
+
+## v1.2.4-alpha.1
+**Date:** 2017-08-30
 
 * Added a new Symbol.sketch file as a resource that the plugin can use to insert a properly configured button master symbol.
 * Added a demo gif to the readme page.
