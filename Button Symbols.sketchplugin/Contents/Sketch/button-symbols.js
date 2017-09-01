@@ -42,35 +42,36 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
             var layer = layers[k];
 
             var group = null;
-            if(this.isText(layer)) {
+            /*if(this.isText(layer)) {
                 // The idea here is to get the text layer's value and then replace the text layer with a button instance that contains the text layer's value as its label override.
-                /*
+                /!*
                  *
                  * var obj = {};
                  obj[<overrideLayerID>] = "overrideText";
                  symbolInstance.addOverrides_forCellAtIndex_ancestorIDs_(obj, 0, nil);
-                 */
+                 *!/
+            } else {*/
+
+            if(this.isGroup(layer)) {
+                group = layer;
             } else {
-                if(this.isGroup(layer)) {
-                    group = layer;
-                } else {
-                    group = layer.parentGroup();
-                }
-
-                // Insert the symbol into the target group.
-                var symbolUri = this.sketch.resourceNamed('Symbol.sketch');
-
-
-                var sketchFile = MSDocument.new();
-                sketchFile.readFromURL_ofType_error(symbolUri, 'com.bohemiancoding.sketch.drawing', null);
-
-                if(sketchFile) {
-                    this._addSymbolByName(sketchFile, group, 'Button');
-                    sketchFile.close();
-                } else {
-                    this.showMessage('Unable to open the Symbol.sketch file in the plugin Resources folder. Try re-installing Button Symbols to repair the plugin.');
-                }
+                group = layer.parentGroup();
             }
+
+            // Insert the symbol into the target group.
+            var symbolUri = this.sketch.resourceNamed('Symbol.sketch');
+
+
+            var sketchFile = MSDocument.new();
+            sketchFile.readFromURL_ofType_error(symbolUri, 'com.bohemiancoding.sketch.drawing', null);
+
+            if(sketchFile) {
+                this._addSymbolByName(sketchFile, group, 'ButtonSymbols/Sample');
+                sketchFile.close();
+            } else {
+                this.showMessage('Unable to open the Symbol.sketch file in the plugin Resources folder. Try re-installing Button Symbols to repair the plugin.');
+            }
+            //}
         }
     },
     /**
@@ -150,21 +151,21 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                             break;
                         case 'Padding-H':
                             if(overrides[childObjectId]) {
-                                paddingH = parseInt(overrides[childObjectId], 10);
+                                paddingH = overrides[childObjectId];
                             }
                             if(!paddingH) {
                                 if(this.isText(childLayer)) {
-                                    paddingH = parseInt(childLayer.stringValue().trim(), 10);
+                                    paddingH = childLayer.stringValue();
                                 }
                             }
                             break;
                         case 'Padding-V':
                             if(overrides[childObjectId]) {
-                                paddingV = parseInt(overrides[childObjectId], 10);
+                                paddingV = overrides[childObjectId];
                             }
                             if(!paddingV) {
                                 if(this.isText(childLayer)) {
-                                    paddingV = parseInt(childLayer.stringValue().trim(), 10);
+                                    paddingV = childLayer.stringValue();
                                 }
                             }
                             break;
@@ -179,18 +180,29 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
 
                 // Use the master symbol's label text if no override is set.
                 var defaultSymbolTextLayerValue = labelLayer.stringValue();
-                if(labelTextOverride == '' || labelTextOverride == null) {
+                var emptyLabel = false;
+                if(labelTextOverride.match(/[\s]+/)) {
+                    // Label override is just one or more spaces; treat it as an empty label.
+                    emptyLabel = true;
+                } else if(labelTextOverride == '' || labelTextOverride == null) {
+                    // Label override is not set at all so use the default.
                     labelTextOverride = defaultSymbolTextLayerValue;
                 }
 
-                if(!paddingH) {
-                    // No default or override horizontal padding. Calculate it from existing dimensions in the master symbol.
-                    paddingH = (templateBackgroundWidth - templateLabelWidth) / 2;
+                if(paddingH != 'custom') {
+                    paddingH = parseInt(paddingH, 10);
+                    if(!paddingH) {
+                        // No default or override horizontal padding. Calculate it from existing dimensions in the master symbol.
+                        paddingH = (templateBackgroundWidth - templateLabelWidth) / 2;
+                    }
                 }
 
-                if(!paddingV) {
-                    // No default or override vertical padding. Calculate it from existing dimensions in the master symbol.
-                    paddingV = (templateBackgroundHeight - templateLabelHeight) / 2;
+                if(paddingV != 'custom') {
+                    paddingV = parseInt(paddingV, 10);
+                    if(!paddingV) {
+                        // No default or override vertical padding. Calculate it from existing dimensions in the master symbol.
+                        paddingV = (templateBackgroundHeight - templateLabelHeight) / 2;
+                    }
                 }
 
                 // If no existing x or y position is set, treat the center position of this symbol as the anchor point for the resize
@@ -200,6 +212,13 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                 var centerToParentV = false;
                 positionX = positionX.toString().trim();
                 positionY = positionY.toString().trim();
+                var positionLeft = false;
+                var positionRight = false;
+                var positionTop = false;
+                var positionBottom = false;
+                var stretchyV = false;
+                var stretchyH = false;
+                var matches = null;
                 switch(positionX) {
                     case 'center':
                         centerToParentH = true;
@@ -208,8 +227,20 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                     case 'right':
                         break;
                     default:
-                        positionX = parseInt(positionX, 10);
-                        if(!positionX) {
+                        matches = positionX.match(/(-?[\d]+)(,[\s]{0,}(-?[\d]+))?/);
+                        if(matches) {
+                            if(typeof(matches[3]) != 'undefined') {
+                                // Got a paired set of values
+                                stretchyH = true;
+                                positionLeft = parseInt(matches[1], 10);
+                                positionRight = parseInt(matches[3], 10);
+                            } else {
+                                positionX = parseInt(matches[1], 10);
+                                if(!positionX) {
+                                    maintainCenterH = true;
+                                }
+                            }
+                        } else {
                             maintainCenterH = true;
                         }
                         break;
@@ -222,8 +253,20 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                     case 'bottom':
                         break;
                     default:
-                        positionY = parseInt(positionY, 10);
-                        if(!positionY) {
+                        matches = positionY.match(/(-?[\d]+)(,[\s]{0,}(-?[\d]+))?/);
+                        if(matches) {
+                            if(typeof(matches[3]) != 'undefined') {
+                                // Got a paired set of values
+                                stretchyV = true;
+                                positionTop = parseInt(matches[1], 10);
+                                positionBottom = parseInt(matches[3], 10);
+                            } else {
+                                positionY = parseInt(matches[1], 10);
+                                if(!positionY) {
+                                    maintainCenterV = true;
+                                }
+                            }
+                        } else {
                             maintainCenterV = true;
                         }
                         break;
@@ -234,6 +277,30 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
 
                 var currentSymbolX = symbol.frame().x();
                 var currentSymbolY = symbol.frame().y();
+
+                var skipWidthAdjustment = false;
+                var skipHeightAdjustment = false;
+
+                /*if(emptyLabel === true) {
+                    skipWidthAdjustment = true;
+                    skipHeightAdjustment = true;
+                } else {*/
+                    if(paddingH == 'custom') {
+                        // Adjust padding size so we can safely do math with it.
+                        paddingH = 0;
+                        skipWidthAdjustment = true;
+                    }
+                    if(paddingV == 'custom') {
+                        // Adjust padding size so we can safely do math with it.
+                        paddingV = 0;
+                        skipHeightAdjustment = true;
+                    }
+                //}
+
+                // Get the container for this symbol
+                var group = symbol.parentGroup();
+                var groupWidth = group.frame().width();
+                var groupHeight = group.frame().height();
 
                 // Set the master symbol's label text to the value of the override text
                 labelLayer.setStringValue(labelTextOverride);
@@ -248,11 +315,35 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                 var newSymbolWidth = labelWidth + (paddingH * 2);
                 var newSymbolHeight = labelHeight + (paddingV * 2);
 
-                symbol.frame().setWidth(newSymbolWidth);
-                symbol.frame().setHeight(newSymbolHeight);
+                // Are we setting the width based on a stretchy setting? (pin to left and right)
+                if(stretchyH) {
+                    // Subtract the padding offset values to get the new button symbol width/
+                    newSymbolWidth = groupWidth - (positionLeft + positionRight);
+                    // Make sure the X position is just the left offset. The width of the button will automatically reach the correct location for the right position offset.
+                    positionX = positionLeft;
+                }
 
-                // Get the container for this symbol
-                var group = symbol.parentGroup();
+                // Are we setting the height based on a stretchy setting? (pin to top and bottom )
+                if(stretchyV) {
+                    // Subtract the padding offset values to get the new button symbol height.
+                    newSymbolHeight = groupHeight - (positionTop + positionBottom);
+                    // Make sure the Y position is just the top offset. The height of the button will automatically reach the correct location for the bottom position offset.
+                    positionY = positionTop;
+                }
+
+                if(skipWidthAdjustment === true) {
+                    // We need this set properly in the position calculations
+                    newSymbolWidth = currentSymbolWidth;
+                } else {
+                    symbol.frame().setWidth(newSymbolWidth);
+                }
+
+                if(skipHeightAdjustment === true) {
+                    // We need this set properly in the position calculations
+                    newSymbolHeight = currentSymbolHeight;
+                } else {
+                    symbol.frame().setHeight(newSymbolHeight);
+                }
 
                 // Reposition the button within its container as required
                 if(!group) {
@@ -293,6 +384,7 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                     // Find half the height of the container and subtract half the height of the button
                     positionY = (group.frame().height() / 2) - (newSymbolHeight / 2);
                 } else {
+                    clog('positionY', positionY);
                     switch(positionY) {
                         case 'top':
                             // Position flush with top of parent container
@@ -451,7 +543,7 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
     },
     _addSymbolByName: function(sourceDocument, targetGroup, symbolName) {
         var sourceSymbols = sourceDocument.documentData().allSymbols();
-        var sourceSymbol = this.getLayerByName('ButtonSymbols/Primary', sourceSymbols);
+        var sourceSymbol = this.getLayerByName(symbolName, sourceSymbols);
 
         if(sourceSymbol) {
             var symbolsPage = this.getSymbolsPage();

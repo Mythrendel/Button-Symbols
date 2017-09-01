@@ -1,13 +1,15 @@
 # Button-Symbols
-A plugin that uses symbols and symbol overrides to make buttons insanely easy to re-label, re-size, position relative to parent container, and more. Supported in Sketch 46.2+
+Sketch plugin using symbol overrides to re-label, re-size, and re-position buttons. Supports nested symbols, complex button systems, icons and more!
 
 ## What can this plugin do for me?
 
-* Use symbols for buttons
-	* Change the label (using symbol override)
-	* Change the horizontal and vertical padding (does not use weird layer names for this!)
-	* Change the relative position for the button (anchor to top, left, right, bottom, center)
-    * Change the symbol itself to do things like re-color or change font in all button instances at once.
+* Use symbols for buttons.
+    * Supports simple and complex button systems using various symbol replacement approaches.
+	* Change the label (text override)
+	* Change the horizontal and vertical padding (text overrides)
+	* Change the offset position for the button (anchor to top, left, right, bottom, or center)
+
+## What is New in 1.3.0 (replaces 1.2.3)
 
 ## Install with Sketchpacks
 
@@ -17,13 +19,9 @@ A plugin that uses symbols and symbol overrides to make buttons insanely easy to
 
 ## Demo!
 
-Note: The demo makes use of a Symbol.sketch file available via the <a href="https://github.com/mwhite05/Button-Symbols/releases/latest">download of the latest release</a>.
+<p><img src="https://github.com/mwhite05/Button-Symbols/blob/master/Button Symbols 1.3.0 - Basic Demo-150.gif?raw=true" alt="Button Symbols 1.3.0 - Basic Demo"></p>
 
-<p><img src="https://github.com/mwhite05/Button-Symbols/blob/master/Button Symbols Plugin Demo-175.gif?raw=true" alt="Button Symbols Plugin Demo"></p>
-
-Near the end of the gif I show how the position works relative to the group. At this time, the button itself is considered part of the group so if the button is outside the area you want to position inside of then you need to move the button within that area before running the plugin. Otherwise the button ends up being used to position itself which has some odd side effects.
-
-The above gif is exported at 175% speed. To see a slower version <a href="https://github.com/mwhite05/Button-Symbols/blob/master/Button Symbols Plugin Demo.mp4?raw=true">view it here</a>.
+At the end of the gif I show how the position works relative to the group. At this time, the button itself is considered part of the group so if the button is outside the area you want to position inside of then you need to move the button within that area before running the plugin. Otherwise the button ends up being used to position itself which has some odd side effects.
 
 ## Use Symbol Swapping to Avoid Nested Button Symbols
 
@@ -31,7 +29,11 @@ The above gif is exported at 175% speed. To see a slower version <a href="https:
 
 ## Usage / Instructions
 
-Copy the button symbol from the provided Sketch file or create a symbol that contains the following layers (named exactly these things and preferably in this order):
+Getting started with the built-in sample button is probably the easiest way to check out how this plugin works. Just select an artboard, group, or layer and run the `Button Symbols > Insert Sample Button` command.
+
+You will then have a new master symbol named ButtonSymbols/Primary in your Symbols page and a new instance of that symbol will be automatically placed.
+
+That sample button contains the following layers.
 
 * Label (text layer)
 * Background (shape layer)
@@ -40,10 +42,11 @@ Copy the button symbol from the provided Sketch file or create a symbol that con
 * Position-X (text layer)
 * Position-Y (text layer)
 
-1. Insert an instance of the button symbol somewhere in your document.
-2. Select the instance of that button symbol.
-3. In the Inspector panel you will see the symbol overrides. All of the layers except for `Background` will appear in the list. Adjust values as desired.
-4. With the layer still selected, use the `cmd + j` keyboard shortcut to resize and reposition the button.
+(Don't worry - you can customize the buttons by adding other layers to your button too! For example, an icon symbol layer or a color symbol layer with a mask layer.)
+
+1. Select the instance of that button symbol.
+2. In the Inspector panel you will see the symbol overrides. All of the layers except for `Background` will appear in the list. Adjust values as desired.
+3. With the layer still selected, use the `cmd + j` keyboard shortcut to resize and reposition the button. (Pro-Tip: Sketch doesn't see the updated override value until the field loses focus so be sure to tab away from the field before trying to use the shortcut!)
 
 ## Offset Container
 
@@ -51,27 +54,47 @@ The button position is calculated relative to its parent group. If it is not ins
 
 ## What do the Overrides Do?
 
-* **Label:** Change this to set a custom label for your button. This label should always be a single line of text in this version of the plugin.
+* **Label:**
+    * Change this to set a custom label for your button. This label should always be a single line of text.
+    * A blank (empty) value tells the plugin to use the default label (from the master symbol).
 
-* **Padding-H:** Set this to a positive number to use a custom amount of horizontal padding for your button. The number you use will be doubled so 10 would be 10 on the left and 10 on the right. Leave this value blank to use the horizontal padding from the master symbol itself.
+* **Padding-H:**
+    * Set this to a positive integer to use a custom amount of horizontal padding for your button.
+    * The number you use will be added to the left **and** right so a value of `10` would be 10 pixels of left padding and 10 pixels of right padding.
+    * Leave this value blank (empty) to have your button use the horizontal padding from the master symbol itself.
+    * Use a value of `custom` to manually set the width of your button.
 
-* **Padding-V:** Set this to a positive number to use a custom amount of vertical padding for your button. The number you use will be doubled so 10 would be 10 on the top and 10 on the bottom. Leave this value blank to use the vertical padding from the master symbol itself.
+* **Padding-V:**
+    * Set this to a positive integer to use a custom amount of vertical padding for your button.
+    * The number you use will be added to the top **and** bottom so a value of `10` would be 10 pixels of top padding and 10 pixels of bottom padding.
+    * Leave this value blank to use the vertical padding from the master symbol itself.
+    * Use a value of `custom` to manually set the height of your button.
 
-* **Position-X:** Set this to a positive number to position the button relative to the left edge of its offset container. Use a negative number to position relative to the right edge of the offset container. Set to the word `center` to horizontally center the button within its offset container. Leave blank to manually position the button. Any label width changes made when Position-X is blank will anchor the resize from the horizontal center. Set to the word `left` or `right` to position left or right edge of button flush with parent container's left or right edge.
+* **Position-X:**
+    * Set this to a positive number to position the button relative to the left edge of its offset container.
+    * Use a negative number to position relative to the right edge of the offset container.
+    * Use a value of `center` to horizontally center the button within its offset container.
+    * Leave blank to manually position the button horizontally.
+    * Any label width changes made when Position-X is blank will anchor the resize from the horizontal center.
+    * Use a value of `left` or `right` to position the left or right edge of the button flush with offset container's left or right edge.
+    * Use a comma separated pair of integers to create a "stretchy" button. For example: `20,20` will set the button to full width with 20 pixels margin left and 20 pixels margin right. 
 
-* **Position-Y:** Set this to a positive number to position the button relative to the top edge of its offset container. Use a negative number to position relative to the bottom edge of the offset container. Set to the word `center` to vertically center the button within its offset container. Leave blank to manually position the button. Any label height changes made when Position-Y is blank will anchor the resize from the vertical center. Set to the word `top` or `bottom` to position top or bottom edge of button flush with parent container's top or bottom edge.
-
-## Work in Progress
-
-See [1.2.4-alpha.1](https://github.com/mwhite05/Button-Symbols/releases/tag/1.2.4-alpha.1)
-
-* Have an action to insert a button that conforms to the specifications this plugin requires (the button you get from Symbol.sketch).
-* Support "no label" buttons by treating a label override of only space characters in a special way.
-* Support icons in the button. (Work in progress)
-* Support different padding on top vs bottom and left vs right with a format like Padding-H: 10,20 or 10:20.
-* Support stretchy buttons that can pin to left and right or top and bottom with a format like: Position-X: 10,10 or 10:10
+* **Position-Y:**
+    * Set this to a positive number to position the button relative to the top edge of its offset container.
+    * Use a negative number to position relative to the bottom edge of the offset container.
+    * Use a value of `center` to vertically center the button within its offset container.
+    * Leave blank to manually position the button vertically.
+    * Any label width changes made when Position-Y is blank will anchor the resize from the vertical center.
+    * Use a value of `top` or `bottom` to position the top or bottom edge of the button flush with offset container's top or bottom edge.
+    * Use a comma separated pair of integers to create a "stretchy" button. For example: `20,20` will set the button to full height with 20 pixels margin top and 20 pixels margin bottom.
 
 ## Future Plans
 
-* Handling of events/Actions: Currently I was unable to get the TextChanged and many other events (Actions) to trigger my code. Only a couple of the ones I tried worked so until that is patched you will need to run the plugin manually. As far as I can tell, once that works in Sketch I will be able to update this plugin to automatically respond as you change values. (I have contacted Bohemian about ths issue.)
-* Multi-line buttons (very very very low priority and maybe never - why is your button text so long or your button so small?!?!?! Maybe time to rethink your UX on that)
+* Handling of events/Actions: Currently I was unable to get the TextChanged and many other events (Actions) to trigger my code. Only a couple of the ones I tried worked so until that is patched you will need to run the plugin manually. As far as I can tell, once that works in Sketch I will be able to update this plugin to automatically respond as you change values. (I and others have contacted Bohemian about ths issue; see links below.)
+* [Use the issue reports page to request features](https://github.com/mwhite05/Button-Symbols/issues). No promises that I will add them, but feel free to ask.
+
+## Sketch Issues Causing Problems for the Growth of this Plugin
+
+* [Using the Action API](http://sketchplugins.com/d/70-using-the-action-api/17)
+* [Action API - Many/Most Actions Not Triggering](http://sketchplugins.com/d/190-action-api-many-most-actions-not-triggering)
+* [Detecting changes to layers and styles](http://sketchplugins.com/d/185-detecting-changes-to-layers-and-styles)
