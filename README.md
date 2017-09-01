@@ -12,7 +12,7 @@ Sketch plugin using symbol overrides to re-label, re-size, and re-position butto
 ## What is New in 1.3.0 (replaces 1.2.3)
 
 1. Added support for `custom` as a special padding value. This allows you to take advantage of the position and label override features while controlling the button's width and/or height manually.
-2. Added support for "stretchy" buttons by allowing a comma separated list of offset values (e.g. Position-X: <left>,<right> or Position-Y: <top>,<bottom>) If you set a stretchy setting, any padding along that axis will be ignored.
+2. Added support for "stretchy" buttons by allowing a comma separated list of offset values (e.g. Position-X: &lt;left&gt;,&lt;right&gt; or Position-Y: &lt;top&gt;,&lt;bottom&gt;) If you set a stretchy setting, any padding along that axis will be ignored.
 3. Code cleanup to divide it into multiple files for better organization and easier maintenance of this plugin.
 4. Improved the bundled symbol in regards to distribution to the world by changing the font in the default button to use Verdana instead of Open Sans and adjusted the name of the bundled symbol to "ButtonSymbols/Primary" (instead of just "Button").
 5. Updated the demo on the readme page.
