@@ -101,6 +101,8 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
 
                 var overrides = layer.overrides();
 
+                clog('better overrides', overrides + '');
+
                 if(!overrides) {
                     continue; // No point continuing - no overrides set
                 }
@@ -126,8 +128,57 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                         case 'Label':
                             templateLabelWidth = childLayer.frame().width();
                             templateLabelHeight = childLayer.frame().height();
-                            labelLayer = childLayer;
-                            labelTextOverride = overrides[childObjectId];
+
+                            // We now support the Label layer as a symbol so that its color can change independently of the other button parts.
+                            if(this.isSymbol(childLayer)) {
+                                // Dig down to find the actual text layer for the label text.
+                                var labelMaster = childLayer.symbolMaster();
+                                var labelChildren = labelMaster.children();
+                                var masterLabelTextLayer = this.getLayerByName('Label', labelChildren);
+                                var masterLabelTextLayerId = masterLabelTextLayer.objectID() + '';
+                                var masterLabelTextLayerName = masterLabelTextLayer.name(); // Currently will always be: Label
+
+                                clog('masterLabelTextLayerId', masterLabelTextLayerId);
+
+                                var labelLayerOverrides = overrides[childObjectId];
+
+                                clog('labelLayerOverrides', labelLayerOverrides + '');
+
+                                if(labelLayerOverrides[masterLabelTextLayerId]) {
+                                    clog("ROUTE A");
+                                    // This is the easy way; they haven't swapped symbols for the label so the ID still matches.
+                                    labelTextOverride = labelLayerOverrides[masterLabelTextLayerId];
+                                    clog('labelTextOverride', labelTextOverride + '');
+                                    labelLayer = masterLabelTextLayer;
+                                } else {
+                                    clog("ROUTE B");
+                                    // loop over the label symbol layer's overrides
+                                    // Find each corresponding layer by ID var layer = this._object.documentData().layerWithID_(layer_id);
+                                    // Get the name of that corresponding layer and see if it matches the masterLabelTextLayerName
+                                    // This is essentially how Sketch itself figures out if your overrides should be
+                                    // mapped to the new symbol so it seems safe enough to do this in our plugin.
+                                    for(var tmpLayerId in labelLayerOverrides) {
+                                        //noinspection JSUnfilteredForInLoop
+                                        var tmpLayer = this.document.documentData().layerWithID_(tmpLayerId);
+                                        if(tmpLayer) {
+                                            var tmpLayerName = tmpLayer.name();
+                                            if(tmpLayerName == masterLabelTextLayerName) {
+                                                //noinspection JSUnfilteredForInLoop
+                                                labelTextOverride = labelLayerOverrides[tmpLayerId];
+                                                labelLayer = tmpLayer;
+
+                                                // We found the label text override so we're done with the loop.
+                                                break;
+                                            }
+                                        }
+                                    }
+
+                                }
+                            } else {
+                                clog("ROUTE C");
+                                labelLayer = childLayer;
+                                labelTextOverride = overrides[childObjectId];
+                            }
                             break;
                         case 'Position-X':
                             if(overrides[childObjectId]) {
@@ -179,7 +230,11 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                 }
 
                 // Use the master symbol's label text if no override is set.
-                var defaultSymbolTextLayerValue = labelLayer.stringValue();
+                var defaultSymbolTextLayerValue = ' ';
+                // If labelLayer is not found it might be because it is nested inside a symbol that was overridden to "None"
+                if(labelLayer) {
+                    defaultSymbolTextLayerValue = labelLayer.stringValue();
+                }
                 var emptyLabel = false;
                 if(labelTextOverride.match(/[\s]+/)) {
                     // Label override is just one or more spaces; treat it as an empty label.
@@ -302,15 +357,22 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                 var groupWidth = group.frame().width();
                 var groupHeight = group.frame().height();
 
-                // Set the master symbol's label text to the value of the override text
-                labelLayer.setStringValue(labelTextOverride);
+                if(!labelLayer) {
+                    labelWidth = 0;
+                    labelHeight = 0;
+                    skipWidthAdjustment = true;
+                    skipHeightAdjustment = true;
+                } else {
+                    // Set the master symbol's label text to the value of the override text
+                    labelLayer.setStringValue(labelTextOverride);
 
-                // Get the updated width and height of the label text
-                var labelWidth = labelLayer.frame().width();
-                var labelHeight = labelLayer.frame().height();
+                    // Get the updated width and height of the label text
+                    var labelWidth = labelLayer.frame().width();
+                    var labelHeight = labelLayer.frame().height();
 
-                // Restore the master symbol's label text to its initial value
-                labelLayer.setStringValue(defaultSymbolTextLayerValue);
+                    // Restore the master symbol's label text to its initial value
+                    labelLayer.setStringValue(defaultSymbolTextLayerValue);
+                }
 
                 var newSymbolWidth = labelWidth + (paddingH * 2);
                 var newSymbolHeight = labelHeight + (paddingV * 2);
@@ -384,7 +446,6 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                     // Find half the height of the container and subtract half the height of the button
                     positionY = (group.frame().height() / 2) - (newSymbolHeight / 2);
                 } else {
-                    clog('positionY', positionY);
                     switch(positionY) {
                         case 'top':
                             // Position flush with top of parent container

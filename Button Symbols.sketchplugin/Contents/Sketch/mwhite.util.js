@@ -43,6 +43,11 @@ Mwhite.Util = {
                 console.log(clogItem);
             }
         }
+    },
+    convertToJavaScriptObject: function(nsDictionary) {
+        var jsonData = NSJSONSerialization.dataWithJSONObject_options_error_(nsDictionary, 0, null);
+        var jsonString = NSString.alloc().initWithData_encoding_(jsonData, NSUTF8StringEncoding);
+        return JSON.parse(jsonString);
     }
 };
 

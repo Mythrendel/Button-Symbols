@@ -9,7 +9,7 @@ Sketch plugin using symbol overrides to re-label, re-size, and re-position butto
 	* Change the horizontal and vertical padding (text overrides)
 	* Change the offset position for the button (anchor to top, left, right, bottom, or center)
 
-## What is New in 1.3.0 (replaces 1.2.3)
+## What's New in 1.3.0 (replaces 1.2.3)
 
 1. Added support for `custom` as a special padding value. This allows you to take advantage of the position and label override features while controlling the button's width and/or height manually.
 2. Added support for "stretchy" buttons by allowing a comma separated list of offset values (e.g. Position-X: &lt;left&gt;,&lt;right&gt; or Position-Y: &lt;top&gt;,&lt;bottom&gt;) If you set a stretchy setting, any padding along that axis will be ignored.
@@ -97,6 +97,7 @@ The button position is calculated relative to its parent group. If it is not ins
 
 ## Future Plans
 
+* In Sketch 47 beta they have announced support for a new feature called Libraries which is basically referencing other Sketch files with symbols in them. Pondering how to potentially leverage this functionality in this plugin. Ideas welcome, just post an issue report as a feature request.
 * Handling of events/Actions: Currently I was unable to get the TextChanged and many other events (Actions) to trigger my code. Only a couple of the ones I tried worked so until that is patched you will need to run the plugin manually. As far as I can tell, once that works in Sketch I will be able to update this plugin to automatically respond as you change values. (I and others have contacted Bohemian about ths issue; see links below.)
 * [Use the issue reports page to request features](https://github.com/mwhite05/Button-Symbols/issues). No promises that I will add them, but feel free to ask.
 

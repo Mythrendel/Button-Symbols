@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.1
+**Date:** 2017-09-03
+
+1. Improved handling of advanced button systems by allowing the `Label` layer in the button to be a symbol that contains a text layer named `Label` so that the label color can be changed independently of the other button parts. This is lieu of masks because you cannot mask text like you can with vectors.
+
 ## v1.3.0
 **Date:** 2017-09-01
 
