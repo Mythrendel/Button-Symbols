@@ -11,7 +11,7 @@
  * @param context
  */
 function onSelectionChanged(context) {
-    //clog('running onSelectionChanged()');
+    clog('running onSelectionChanged()');
     // Do nothing for now - maybe we automate this later
     return;
     /*var action = context.actionContext;
@@ -26,7 +26,7 @@ function onSelectionChanged(context) {
  * @param context
  */
 function onTextChanged(context) {
-    //clog('running onTextChanged()');
+    clog('running onTextChanged()');
     // todo - once this method will actually run we can automate it to update the button symbol the text is part of.
     return;
     /*var action = context.actionContext;

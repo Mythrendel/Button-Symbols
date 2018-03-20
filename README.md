@@ -9,6 +9,14 @@ Sketch plugin using symbol overrides to re-label, re-size, and re-position butto
 	* Change the horizontal and vertical padding (text overrides)
 	* Change the offset position for the button (anchor to top, left, right, bottom, or center)
 
+## What is New in 1.4.0 (replaces 1.3.0)
+
+1. Improved flexibility of symbol layer structure and naming.
+    a. Removed the requirement of having a layer named Background inside the symbol.
+    b. Removed the requirement of having a text layer named Label (as long as you provide a Label Placeholder shape layer instead).
+2. Added an Sketch file containing an advanced button system with a lot of flexibility for real world use.
+    a. Feel free to copy this as a starting point and customize for your own needs. <a href="https://github.com/mwhite05/Button-Symbols/blob/master/Advanced Button System.md">Read up</a> on some critical nuances I found when creating the system.
+
 ## What is New in 1.3.0 (replaces 1.2.3)
 
 1. Added support for `custom` as a special padding value. This allows you to take advantage of the position and label override features while controlling the button's width and/or height manually.

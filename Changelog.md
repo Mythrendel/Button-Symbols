@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.4.0
+**Date:** 2018-03-16
+
+1. THIS IS BIG! Added an Sketch file and tutorial for an advanced button system with a lot of flexibility for real world use!
+1. Added support for more flexible and advanced layer structures inside of a button symbol.
+    a. Removed the requirement of having a layer named Background.
+    b. Removed the requirement of having a text layer named Label (as long as you provide a Label Placeholder shape layer instead).
+    c. Added support for a new Label Placeholder layer for providing the plugin with Label size information when the Label layer itself is not present or is named something other than Label.
+    d. Removed the requirement of
+3. Updated the utility class console logging to send output to the log() function if available (instead of console.log)
+
 ## v1.3.0
 **Date:** 2017-09-01
 

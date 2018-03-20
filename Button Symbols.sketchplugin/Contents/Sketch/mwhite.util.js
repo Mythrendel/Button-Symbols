@@ -40,7 +40,11 @@ Mwhite.Util = {
         for(var i in clogs) {
             if(clogs.hasOwnProperty(i)) {
                 var clogItem = clogs[i];
-                console.log(clogItem);
+                if(typeof log === 'function') {
+                    log(clogItem);
+                } else {
+                    console.log(clogItem);
+                }
             }
         }
     }

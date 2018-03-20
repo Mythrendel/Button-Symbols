@@ -3,6 +3,8 @@
  * @copyright 2017 Michael White
  */
 
+// @const sketch Instance of the full Sketch API (not the same as context.api() for some reason... sigh)
+
 @import "mwhite.base-class.js";
 @import "mwhite.util.js";
 
@@ -22,12 +24,14 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
     __construct: function(context) {
         this.util = Mwhite.Util;
         this.context = context;
-        this.sketch = context.api();
+        //this.sketch = context.api();
+        this.sketch = sketch; // Map sketch api reference to the value stored in the sketch constant; context.api() is not the same thing (anymore?)
         this.document = context.document;
         this.page = this.document.currentPage();
         this.selection = context.selection;
     },
     showMessage: function(message) {
+        clog(message);
         this.document.showMessage(message);
     },
     insertButtonSymbolForSelection: function() {
@@ -74,6 +78,74 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
             //}
         }
     },
+
+    initializeSelectionAsButton: function() {
+        var layers = this.selection;
+
+        if(!layers.count()) {
+            this.showMessage('Please select at least one artboard.');
+            return;
+        }
+
+        for(var k = 0; k < layers.count(); k++) {
+            var layer = layers[k];
+
+            var target = this.getSymbolMasterForLayer(layer);
+            if(target) {
+                this._initializeSymbolMasterAsButton(target);
+            }
+        }
+    },
+
+    _initializeSymbolMasterAsButton: function(target) {
+        // todo Add a Label text layer if no Label text layer or Label Placeholder shape layer exist
+        var labelLayer = this._getTextLayerByName(target, 'Label');
+
+        // todo Add the Padding-*, Position-* layers as required back
+
+        if(!labelLayer) {
+            var textLayer = new sketch.Text({
+                parent: target,
+                text: "Label",
+                alignment: sketch.Text.Alignment.center
+            });
+        }
+    },
+
+    /**
+     *
+     * @param layer
+     * @param name
+     * @returns {*} Returns null if no layer by the given name is found for the provi
+     * @private
+     */
+    _getTextLayerByName: function(layer, name, depth) {
+        if(typeof depth == 'undefined') {
+            depth = 0;
+        }
+        depth++;
+        if(depth > 5) {
+            return null;
+        }
+        if(this.isText(layer) && layer.name() + '' == name) {
+            return layer;
+        } else if(this.isArtboard(layer) || this.isGroup(layer) || this.isMasterSymbol(layer)) {
+            // Loop children
+            var children = layer.children();
+            for(var k=0; k < children.count(); k++) {
+                var child = children[k];
+                if(child.objectID() + '' != layer.objectID() + '') {
+                    var target = this._getTextLayerByName(child, name, depth);
+                    if(target) {
+                        return target;
+                    }
+                }
+            }
+        }
+
+        return null;
+    },
+
     /**
      * Update the size and position of any selected button symbols.
      *
@@ -112,22 +184,39 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                 var paddingV = 0;
                 var labelLayer = null;
                 var labelTextOverride = '';
+                var hasLabelPlaceholder = false;
                 var templateLabelWidth = 0;
                 var templateLabelHeight = 0;
                 var templateBackgroundWidth = 0;
                 var templateBackgroundHeight = 0;
+
+                // Get template background dimensions directly from the master symbol instead of from a specifically named layer in the symbol which is very restrictive.
+                templateBackgroundWidth = symbolMaster.frame().width();
+                templateBackgroundHeight = symbolMaster.frame().height();
 
                 // Loop the children of the symbol to find the layers that provide the override values we want.
                 for(var i = 0; i < masterChildrenCount; i++) {
                     var childLayer = masterChildren[i];
                     var childName = childLayer.name() + '';
                     var childObjectId = childLayer.objectID() + '';
+
                     switch(childName) {
                         case 'Label':
-                            templateLabelWidth = childLayer.frame().width();
-                            templateLabelHeight = childLayer.frame().height();
+                            if(!this.isText(childLayer)) {
+                                break;
+                            }
+                            if(!hasLabelPlaceholder) {
+                                // Only set this if we have not found a label placeholder yet. Label placeholders override the label itself for obtaining width.
+                                templateLabelWidth = childLayer.frame().width();
+                                templateLabelHeight = childLayer.frame().height();
+                            }
                             labelLayer = childLayer;
                             labelTextOverride = overrides[childObjectId];
+                            break;
+                        case 'Label Placeholder':
+                            hasLabelPlaceholder = true;
+                            templateLabelWidth = childLayer.frame().width();
+                            templateLabelHeight = childLayer.frame().height();
                             break;
                         case 'Position-X':
                             if(overrides[childObjectId]) {
@@ -169,24 +258,30 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                                 }
                             }
                             break;
+                        /* This is the old way it was done in v1.3.x
+                        This way was too restrictive with advanced button symbols.
                         case 'Background':
                             templateBackgroundWidth = childLayer.frame().width();
                             templateBackgroundHeight = childLayer.frame().height();
-                            break;
+                            break;*/
                         default:
                             // Nothing to do here
                     }
                 }
 
                 // Use the master symbol's label text if no override is set.
-                var defaultSymbolTextLayerValue = labelLayer.stringValue();
                 var emptyLabel = false;
-                if(labelTextOverride.match(/[\s]+/)) {
-                    // Label override is just one or more spaces; treat it as an empty label.
+                if(labelLayer) {
+                    var defaultSymbolTextLayerValue = labelLayer.stringValue();
+                    if(labelTextOverride.match(/[\s]+/)) {
+                        // Label override is just one or more spaces; treat it as an empty label.
+                        emptyLabel = true;
+                    } else if(labelTextOverride == '' || labelTextOverride == null) {
+                        // Label override is not set at all so use the default.
+                        labelTextOverride = defaultSymbolTextLayerValue;
+                    }
+                } else {
                     emptyLabel = true;
-                } else if(labelTextOverride == '' || labelTextOverride == null) {
-                    // Label override is not set at all so use the default.
-                    labelTextOverride = defaultSymbolTextLayerValue;
                 }
 
                 if(paddingH != 'custom') {
@@ -303,14 +398,19 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                 var groupHeight = group.frame().height();
 
                 // Set the master symbol's label text to the value of the override text
-                labelLayer.setStringValue(labelTextOverride);
+                if(labelLayer) {
+                    labelLayer.setStringValue(labelTextOverride);
 
-                // Get the updated width and height of the label text
-                var labelWidth = labelLayer.frame().width();
-                var labelHeight = labelLayer.frame().height();
+                    // Get the updated width and height of the label text
+                    var labelWidth = labelLayer.frame().width();
+                    var labelHeight = labelLayer.frame().height();
 
-                // Restore the master symbol's label text to its initial value
-                labelLayer.setStringValue(defaultSymbolTextLayerValue);
+                    // Restore the master symbol's label text to its initial value
+                    labelLayer.setStringValue(defaultSymbolTextLayerValue);
+                } else {
+                    labelWidth = templateLabelWidth;
+                    labelHeight = templateLabelHeight;
+                }
 
                 var newSymbolWidth = labelWidth + (paddingH * 2);
                 var newSymbolHeight = labelHeight + (paddingV * 2);
@@ -384,7 +484,6 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                     // Find half the height of the container and subtract half the height of the button
                     positionY = (group.frame().height() / 2) - (newSymbolHeight / 2);
                 } else {
-                    clog('positionY', positionY);
                     switch(positionY) {
                         case 'top':
                             // Position flush with top of parent container
@@ -511,6 +610,40 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
             }
 
             return this.getSymbolForLayer(layer.parentGroup());
+        }
+
+        return null;
+    },
+    /**
+     * Utility to get the master symbol that the specified layer references. If the layer is not itself a symbol master, symbol instance, or contained by a symbol master, null is returned.
+     *
+     * @param layer
+     * @returns {*}
+     */
+    getSymbolMasterForLayer: function(layer) {
+        if(layer) {
+            if(this.isMasterSymbol(layer)) {
+                return layer;
+            }
+
+            return this.getSymbolMasterForLayer(layer.parentGroup());
+        }
+
+        return null;
+    },
+    /**
+     * Utility to get the artboard that the specified layer is part of. If the layer is not itself or is not contained by an artboard, null is returned.
+     *
+     * @param layer
+     * @returns {*}
+     */
+    getArtboardForLayer: function(layer) {
+        if(layer) {
+            if(this.isArtboard(layer)) {
+                return layer;
+            }
+
+            return this.getArtboardForLayer(layer.parentGroup());
         }
 
         return null;
