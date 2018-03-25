@@ -11,20 +11,17 @@ Sketch plugin using symbol overrides to re-label, re-size, and re-position butto
 
 ## What is New in 1.4.0 (replaces 1.3.0)
 
-1. Improved flexibility of symbol layer structure and naming.
-    a. Removed the requirement of having a layer named Background inside the symbol.
-    b. Removed the requirement of having a text layer named Label (as long as you provide a Label Placeholder shape layer instead).
-2. Added an Sketch file containing an advanced button system with a lot of flexibility for real world use.
-    a. Feel free to copy this as a starting point and customize for your own needs. <a href="https://github.com/mwhite05/Button-Symbols/blob/master/Advanced Button System.md">Read up</a> on some critical nuances I found when creating the system.
-
-## What is New in 1.3.0 (replaces 1.2.3)
-
-1. Added support for `custom` as a special padding value. This allows you to take advantage of the position and label override features while controlling the button's width and/or height manually.
-2. Added support for "stretchy" buttons by allowing a comma separated list of offset values (e.g. Position-X: &lt;left&gt;,&lt;right&gt; or Position-Y: &lt;top&gt;,&lt;bottom&gt;) If you set a stretchy setting, any padding along that axis will be ignored.
-3. Code cleanup to divide it into multiple files for better organization and easier maintenance of this plugin.
-4. Improved the bundled symbol in regards to distribution to the world by changing the font in the default button to use Verdana instead of Open Sans and adjusted the name of the bundled symbol to "ButtonSymbols/Primary" (instead of just "Button").
-5. Updated the demo on the readme page.
-6. Updated the documentation of the available features.
+* Added a new command: Convert Selection to Button.
+    * Covert your current selection into a valid symbol recognized by the Button Symbols plugin.
+    * Shortcut: Ctrl + Cmd + Shift + B
+    * Simplest usage pattern: Create a shape layer for your button background and run this command.
+* Improved flexibility of symbol layer structure and naming.
+    * Removed the requirement of having a layer named "Label" inside the symbol.
+    * Removed the requirement of having a layer named "Background" inside the symbol.
+    * Added support for a new special layer named "Label Placeholder" which was needed for the creation of some complex button systems.
+* Added a Sketch file containing an advanced button system with a lot of flexibility for real world use.
+    * Feel free to copy this as a starting point and customize for your own needs.
+    * Learn how to <a href="https://github.com/mwhite05/Button-Symbols/blob/master/Advanced Button System.md">create your own advanced button system</a> from scratch.
 
 ## Install with Sketchpacks
 
@@ -36,32 +33,18 @@ Sketch plugin using symbol overrides to re-label, re-size, and re-position butto
 
 <p><img src="https://github.com/mwhite05/Button-Symbols/blob/master/Button Symbols 1.3.0 - Basic Demo-150.gif?raw=true" alt="Button Symbols 1.3.0 - Basic Demo"></p>
 
-At the end of the gif I show how the position works relative to the group. At this time, the button itself is considered part of the group so if the button is outside the area you want to position inside of then you need to move the button within that area before running the plugin. Otherwise the button ends up being used to position itself which has some odd side effects.
-
-## Use Symbol Swapping to Avoid Nested Button Symbols
-
-<p><img src="https://github.com/mwhite05/Button-Symbols/blob/master/Symbol Swapping Demo.gif?raw=true" alt="Symbol Swapping Demo"></p>
+At the end of the gif I show how the position works relative to the group. The button itself is considered part of the group so if the button is outside the area you want to position inside of then you need to move the button within that area before running the plugin. Otherwise the button ends up being used to position itself which has some odd side effects.
 
 ## Usage / Instructions
 
-Getting started with the built-in sample button is probably the easiest way to check out how this plugin works. Just select an artboard, group, or layer and run the `Button Symbols > Insert Sample Button` command.
+The simplest way to get started with Button Symbols version 1.4.0+ is to:
 
-You will then have a new master symbol named ButtonSymbols/Primary in your Symbols page and a new instance of that symbol will be automatically placed.
-
-That sample button contains the following layers.
-
-* Label (text layer)
-* Background (shape layer)
-* Padding-H (text layer)
-* Padding-V (text layer)
-* Position-X (text layer)
-* Position-Y (text layer)
-
-(Don't worry - you can customize the buttons by adding other layers to your button too! For example, an icon symbol layer or a color symbol layer with a mask layer.)
-
-1. Select the instance of that button symbol.
-2. In the Inspector panel you will see the symbol overrides. All of the layers except for `Background` will appear in the list. Adjust values as desired.
-3. With the layer still selected, use the `cmd + j` keyboard shortcut to resize and reposition the button. (Pro-Tip: Sketch doesn't see the updated override value until the field loses focus so be sure to tab away from the field before trying to use the shortcut!)
+* Create a rectangle for your button background.
+* Create a text layer for your button label.
+* Select both layers and run the "Convert Selection to Button" command (shortcut: ctrl cmd shift B)
+* You now have a new symbol that is fully compatible with the Button Symbols command and an instance of that symbol is already selected.
+* In the Inspector panel you will see the symbol overrides. Adjust values as desired.
+* With the symbol instance layer still selected, use the `cmd + j` keyboard shortcut to resize and reposition the button. (Pro-Tip: Sketch doesn't see the updated override value until the field loses focus so be sure to tab away from the field before trying to use the shortcut!)
 
 ## Offset Container
 
@@ -69,7 +52,7 @@ The button position is calculated relative to its parent group. If it is not ins
 
 ## What do the Overrides Do?
 
-* **Label:**
+* **Label (or first text layer):**
     * Change this to set a custom label for your button. This label should always be a single line of text.
     * A blank (empty) value tells the plugin to use the default label (from the master symbol).
 
@@ -105,11 +88,6 @@ The button position is calculated relative to its parent group. If it is not ins
 
 ## Future Plans
 
-* Handling of events/Actions: Currently I was unable to get the TextChanged and many other events (Actions) to trigger my code. Only a couple of the ones I tried worked so until that is patched you will need to run the plugin manually. As far as I can tell, once that works in Sketch I will be able to update this plugin to automatically respond as you change values. (I and others have contacted Bohemian about ths issue; see links below.)
+* Handling of events/Actions: The TextChanged event is only run when the text layer value is changed directly and does not run when a symbol override changes. I'm currently looking into alternative solutions that will work via the Cocoascript API. At this time I have no plans to rewrite this plugin in native code.
 * [Use the issue reports page to request features](https://github.com/mwhite05/Button-Symbols/issues). No promises that I will add them, but feel free to ask.
 
-## Sketch Issues Causing Problems for the Growth of this Plugin
-
-* [Using the Action API](http://sketchplugins.com/d/70-using-the-action-api/17)
-* [Action API - Many/Most Actions Not Triggering](http://sketchplugins.com/d/190-action-api-many-most-actions-not-triggering)
-* [Detecting changes to layers and styles](http://sketchplugins.com/d/185-detecting-changes-to-layers-and-styles)

@@ -97,28 +97,62 @@ The easiest button to set up is the one that has a label and does _not_ have any
 - Center the label layer on the artboard.
 - If you want a background color for your button insert a swatch symbol of the desired color and set it to fill the artboard.
 - Group the layers and name the group something like "Button/Solid/Label Only"
-- Convert the group into a symbol. (As always, keep the name.)
+- Convert the group to a symbol by selecting it and using the Button Symbols > Convert Selection to Button option.
 
 
-## Creating an Button with an Icon
+## Creating a Button with an Icon
 
-To make this work you'll need to understand how to set the resize behavior of layers using the built-in Sketch resize options.
+For this example we'll create a button with the icon placed to the left side of the label.
+
+To make this work you need to understand how to set the resize attachment behavior of layers using the built-in Sketch options for pin [top, right, bottom, left], fixed width, and fixed height.
+
+- Duplicate the symbol button symbol you created that has only a label.
+- Rename it to something like "Button/Solid/Icon Left"
+- Resize the artboard to make room for an icon to the left of the button.
+- Insert one of the icon symbols you created earlier and position it where you want.
+- With the icon symbol layer selected, enable the "Pin Left", "Fixed Width", and "Fixed Height" options.
+- Now select the Label layer
+- CRITICAL: ensure "Auto" (not "Fixed) is selected (near the text alignment options)
+	- Sometimes Sketch is greedy and sets this to "Fixed" on its own after you make changes. If all your button instances suddenly stop working properly remember to check this!
+- Set the text alignment to left aligned.
+- Enable the "Pin Left" and "Fixed Width" options for the Label Layer.
+- You duplicated a symbol to start; there is no convert to symbol step for this one.
 
 
+## Creating a Button without a Label
 
-**TIP:** Use a size that you aren't likely to use for any other symbols so your swatch symbols don't get mixed in with others in the symbol overrides lists.
+Sometimes you might need a button that does not even have a text label; an icon-only button for example.
+
+This is where we make use of the Label Placeholder functionality added in Button Symbols 1.4.0
+
+- Duplicate the previous button symbol you made with an icon and a label in it.
+- Delete the "Label" text layer.
+- Deselect the "Pin Left" and "Pin Top" options for the icon layer.
+- Center the icon vertically and horizontally inside the artboard.
+- Insert a rectangle layer and name it "Label Placeholder".
+	- Set the height of the rectangle to match the icon height.
+	- Set the width of the rectangle to match the icon width.
+- Center the "Label Placeholder" rectangle vertically and horizontally inside the artboard.
+- You duplicated a symbol to start; there is no convert to symbol step for this one.
 
 
+## Creating a Button with a Border and Customizable Text Color
 
 
+NOTE: The changing text color only works with a white background due to the use of the Screen blending mode. (Sketch 49 does not support true masking text layers as it does with shape layers but the screen mode on white gives the same effect.)
 
-
-
-
-
-
-
-
+- Duplicate the first button symbol you made that contained only a label.
+- If there is not already a background color layer, insert a color swatch symbol of your choice.
+- Name/rename the color swatch layer to "Border Color" and ensure it fills the artboard completely.
+- Add a white rectangle layer (above the "Border Color" layer) and ensure it fills the artboard completely.
+	- Reduce the width AND height of the white rectangle layer by <borderSize> * 2. (If your borderSize = 2px then reduce layer width and height by 2 * 2 = 4px)
+	- Set the X and Y offsets for the white rectangle to <borderSize>.
+	- You should now be able to see the "Border Color" layer showing around all the edges of the white rectangle layer.
+- Set the color for the "Label" text layer to solid black.
+- Add another color swatch layer (above the "Label" text layer). Name it "Label Color" and ensure it fills the entire artboard.
+	- You should now see a solid color for the entire artboard.
+	- Set the "Blending" mode for this layer to "Screen".
+	- The solid color should disappear and the text label color should match the color of the "Label Color" swatch.
 
 
 

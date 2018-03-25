@@ -38,41 +38,89 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
 
     initializeSelectionAsButton: function() {
         var layers = this.selection;
+        var target = null;
 
         if(!layers.count()) {
             this.showMessage('Please select a layer, symbol, group, or artboard.');
             return;
         }
 
-        this.showMessage('Trying to process selection');
+        var isSafeToGroup = true;
+        for(var i=0; i < layers.count(); i++) {
+            var layer = layers[i];
+            if(this.isArtboard(layer) || this.isMasterSymbol(layer)) {
+                isSafeToGroup = false;
+                break;
+            }
+        }
 
-        for(var k = 0; k < layers.count(); k++) {
-            var layer = layers[k];
+        if(isSafeToGroup) {
+            var groupName = sketch.UI.getStringFromUser('Enter a name for the new button symbol: ', 'Button');
+            target = new sketch.Group({
+                parent: layers[0].parentGroup(),
+                name: groupName,
+                layers: layers
+            });
+            target = target._object;
+            //target.adjustToFit(); does not work even though a lot of places say it should; including current docs! https://developer.sketchapp.com/reference/api/#adjust-to-fit-its-children
+            target.resizeToFitChildrenWithOption(1); // this seems to work just fine though
+        } else if(layers.count() === 1) {
+            // Only one layer to deal with so we treat it as the group (even if it's an artboard or symbol master)
+            target = layers[0];
+        } else {
+            this.showMessage('Unable to process your selection.');
+            return;
+        }
 
-            var target = this.getSymbolMasterForLayer(layer);
-            if(target) {
-                this._initializeAsButtonSymbol(target);
+        var buttonSource = this.getSymbolMasterForLayer(target);
+        if(buttonSource) {
+            this._initializeAsButtonSymbol(buttonSource);
+        } else {
+            if(this.isGroup(target) || this.isArtboard(target)) {
+                buttonSource = target;
             } else {
-                if(this.isGroup(layer) || this.isArtboard(layer)) {
-                    target = layer;
-                } else {
-                    target = layer.parentGroup();
-                }
-                if(target) {
-                    this._initializeAsButtonSymbol(target);
-                } else {
-                    this.showMessage('Invalid selection: '+layer.name());
-                }
+                buttonSource = target.parentGroup();
+            }
+            if(buttonSource) {
+                this._initializeAsButtonSymbol(buttonSource);
+            } else {
+                this.showMessage('Invalid selection: '+target.name());
             }
         }
     },
 
+    /**
+     *
+     * @param target
+     * @returns {MSLayerText|null}
+     * @private
+     */
+    _getLabelLayer: function(target) {
+        var labelLayer = this._getTextLayerByName('Label', target);
+        // No valid "Label" layer found, is there any text layer we can use instead?
+        if(!labelLayer) {
+            var reservedNames = ['Padding-H', 'Padding-V', 'Position-X', 'Position-Y'];
+            var children = target.children();
+            for(var i=0; i < children.length; i++) {
+                var child = children[i];
+                if(this.isText(child) && reservedNames.indexOf(child.name()+'') === -1) {
+                    labelLayer = child;
+                    break;
+                }
+            }
+        }
+        return labelLayer;
+    },
+
     _initializeAsButtonSymbol: function(target) {
         // Add a Label text layer if no Label text layer or Label Placeholder shape layer exist
-        var labelLayer = this._getTextLayerByName('Label', target);
+        var labelLayer = this._getLabelLayer(target);
         var labelLayerPlaceholder = this._getTextLayerByName('Label Placeholder', target);
 
         if(!labelLayer && !labelLayerPlaceholder) {
+            var targetWidth = target.frame().width() / 2;
+            var targetHeight = target.frame().height() / 2;
+
             var labelLayerStub = new sketch.Text({
                 parent: target,
                 text: "Label",
@@ -91,8 +139,8 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
 
             var labelWidth = labelLayer.frame().width();
             var labelHeight = labelLayer.frame().height();
-            var x = (target.frame().width() / 2) - (labelWidth / 2);
-            var y = (target.frame().height() / 2) - (labelHeight / 2);
+            var x = targetWidth - (labelWidth / 2);
+            var y = targetHeight - (labelHeight / 2);
 
             MSLayerMovement.moveToFront([labelLayer]);
             labelLayer.frame().setX(x);
@@ -130,8 +178,8 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                 textLayer.changeTextColorTo(colorBlackTransparent);
                 MSLayerMovement.moveToBack([textLayer]);
                 textLayer.adjustFrameToFit();
-                textLayer.frame().setX((target.frame().width() / 2) - (textLayer.frame().width() / 2));
-                textLayer.frame().setY((target.frame().height() / 2) - (textLayer.frame().height() / 2));
+                textLayer.frame().setX(targetWidth - (textLayer.frame().width() / 2));
+                textLayer.frame().setY(targetHeight - (textLayer.frame().height() / 2));
             }
         }
 
@@ -219,8 +267,6 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
      */
     updateSelectedButtons: function() {
         var layers = this.selection;
-
-        // todo filter the selection to a list of layers that match the required layer configuration.
 
         if(!layers.count()) {
             this.showMessage('Please select at least one button layer to update.');
@@ -332,6 +378,16 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                             break;*/
                         default:
                             // Nothing to do here
+                    }
+                }
+
+                // If we don't have a label placeholder and no layer was found named "Label", find the first text layer we can find and use that for the label instead.
+                if(!hasLabelPlaceholder && !labelLayer) {
+                    labelLayer = this._getLabelLayer(symbolMaster);
+                    if(labelLayer) {
+                        labelTextOverride = overrides[labelLayer.objectID() + ''];
+                        templateLabelWidth = labelLayer.frame().width();
+                        templateLabelHeight = labelLayer.frame().height();
                     }
                 }
 
