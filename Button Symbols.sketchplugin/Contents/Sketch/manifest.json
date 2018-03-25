@@ -18,9 +18,10 @@
         },
         {
             "script": "command-handlers.js",
-            "name": "Insert Sample Button",
-            "identifier": "buttonsymbols_insert",
-            "handler": "command_insertButtonSymbolForSelection"
+            "shortcut": "ctrl cmd shift b",
+            "name": "Convert Selection to Button",
+            "identifier": "buttonsymbols_convert",
+            "handler": "command_convertButtonSymbolForSelection"
         },
         {
             "script": "action-handlers.js",
@@ -33,7 +34,7 @@
         "isRoot": false,
         "items": [
             "buttonsymbols_update",
-            "buttonsymbols_insert"
+            "buttonsymbols_convert"
         ],
         "title": "Button Symbols"
     }

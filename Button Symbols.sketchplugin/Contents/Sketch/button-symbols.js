@@ -4,6 +4,7 @@
  */
 
 // @const sketch Instance of the full Sketch API (not the same as context.api() for some reason... sigh)
+const sketch = require('sketch');
 
 @import "mwhite.base-class.js";
 @import "mwhite.util.js";
@@ -34,99 +35,163 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
         clog(message);
         this.document.showMessage(message);
     },
-    insertButtonSymbolForSelection: function() {
-        var layers = this.selection;
-
-        if(!layers.count()) {
-            this.showMessage('Please select a layer or artboard before inserting a button.');
-            return;
-        }
-
-        for(var k = 0; k < layers.count(); k++) {
-            var layer = layers[k];
-
-            var group = null;
-            /*if(this.isText(layer)) {
-                // The idea here is to get the text layer's value and then replace the text layer with a button instance that contains the text layer's value as its label override.
-                /!*
-                 *
-                 * var obj = {};
-                 obj[<overrideLayerID>] = "overrideText";
-                 symbolInstance.addOverrides_forCellAtIndex_ancestorIDs_(obj, 0, nil);
-                 *!/
-            } else {*/
-
-            if(this.isGroup(layer)) {
-                group = layer;
-            } else {
-                group = layer.parentGroup();
-            }
-
-            // Insert the symbol into the target group.
-            var symbolUri = this.sketch.resourceNamed('Symbol.sketch');
-
-
-            var sketchFile = MSDocument.new();
-            sketchFile.readFromURL_ofType_error(symbolUri, 'com.bohemiancoding.sketch.drawing', null);
-
-            if(sketchFile) {
-                this._addSymbolByName(sketchFile, group, 'ButtonSymbols/Sample');
-                sketchFile.close();
-            } else {
-                this.showMessage('Unable to open the Symbol.sketch file in the plugin Resources folder. Try re-installing Button Symbols to repair the plugin.');
-            }
-            //}
-        }
-    },
 
     initializeSelectionAsButton: function() {
         var layers = this.selection;
 
         if(!layers.count()) {
-            this.showMessage('Please select at least one artboard.');
+            this.showMessage('Please select a layer, symbol, group, or artboard.');
             return;
         }
+
+        this.showMessage('Trying to process selection');
 
         for(var k = 0; k < layers.count(); k++) {
             var layer = layers[k];
 
             var target = this.getSymbolMasterForLayer(layer);
             if(target) {
-                this._initializeSymbolMasterAsButton(target);
+                this._initializeAsButtonSymbol(target);
+            } else {
+                if(this.isGroup(layer) || this.isArtboard(layer)) {
+                    target = layer;
+                } else {
+                    target = layer.parentGroup();
+                }
+                if(target) {
+                    this._initializeAsButtonSymbol(target);
+                } else {
+                    this.showMessage('Invalid selection: '+layer.name());
+                }
             }
         }
     },
 
-    _initializeSymbolMasterAsButton: function(target) {
-        // todo Add a Label text layer if no Label text layer or Label Placeholder shape layer exist
-        var labelLayer = this._getTextLayerByName(target, 'Label');
+    _initializeAsButtonSymbol: function(target) {
+        // Add a Label text layer if no Label text layer or Label Placeholder shape layer exist
+        var labelLayer = this._getTextLayerByName('Label', target);
+        var labelLayerPlaceholder = this._getTextLayerByName('Label Placeholder', target);
 
-        // todo Add the Padding-*, Position-* layers as required back
-
-        if(!labelLayer) {
-            var textLayer = new sketch.Text({
+        if(!labelLayer && !labelLayerPlaceholder) {
+            var labelLayerStub = new sketch.Text({
                 parent: target,
                 text: "Label",
                 alignment: sketch.Text.Alignment.center
             });
+
+            labelLayer = labelLayerStub._object;
+
+            labelLayer.fontSize = 16;
+            labelLayer.setFontPostscriptName('Arial');
+            var colorBlack = NSColor.colorWithDeviceRed_green_blue_alpha_(0, 0, 0, 1);
+            labelLayer.changeTextColorTo(colorBlack);
+            labelLayer.adjustFrameToFit();
+            labelLayer.setTextBehaviour(true);
+
+            var labelWidth = labelLayer.frame().width();
+            var labelHeight = labelLayer.frame().height();
+            var x = (target.frame().width() / 2) - (labelWidth / 2);
+            var y = (target.frame().height() / 2) - (labelHeight / 2);
+
+            MSLayerMovement.moveToFront([labelLayer]);
+            labelLayer.frame().setX(x);
+            labelLayer.frame().setY(y);
         }
+
+        // Add the Padding-*, Position-* layers as required
+        var colorBlackTransparent = NSColor.colorWithDeviceRed_green_blue_alpha_(0, 0, 0, 0);
+        var layersNeeded = [
+            'Padding-H',
+            'Padding-V',
+            'Position-X',
+            'Position-Y'
+        ];
+
+        for(var i = 0; i < layersNeeded.length; i++) {
+            if(!layersNeeded.hasOwnProperty(i)) {
+                continue;
+            }
+            var layerName = layersNeeded[i];
+            var textLayer = this._getTextLayerByName(layerName, target);
+            if(!textLayer) {
+                var textLayerStub = new sketch.Text({
+                    parent: target,
+                    text: '0',
+                    alignment: sketch.Text.Alignment.left
+                });
+
+                textLayer = textLayerStub._object;
+
+                //textLayer.replaceTextPreservingAttributeRanges('0');
+                textLayer.setName(layerName);
+                textLayer.fontSize = 6;
+                textLayer.setFontPostscriptName('Arial');
+                textLayer.changeTextColorTo(colorBlackTransparent);
+                MSLayerMovement.moveToBack([textLayer]);
+                textLayer.adjustFrameToFit();
+                textLayer.frame().setX((target.frame().width() / 2) - (textLayer.frame().width() / 2));
+                textLayer.frame().setY((target.frame().height() / 2) - (textLayer.frame().height() / 2));
+            }
+        }
+
+        if((this.isArtboard(target) || this.isGroup(target)) && !this.isMasterSymbol(target)) {
+            this._convertGroupingToSymbol(target);
+        }
+    },
+
+    _convertGroupingToSymbol: function(grouping) {
+        var layers = [];
+        var children = grouping.children();
+        for(var i=0; i < children.length; i++) {
+            if(children.hasOwnProperty(i)) {
+                var layer = children[i];
+                if(layer.objectID() != grouping.objectID() && layer.parentGroup().objectID() == grouping.objectID()) {
+                    layers.push(layer);
+                }
+            }
+        }
+        layers = MSLayerArray.arrayWithLayers(layers);
+        var symbol = MSSymbolCreator.createSymbolFromLayers_withName_onSymbolsPage(layers, grouping.name(), true);
+
+        // If selection was simple layer group, move the symbol instance to a sibling of the group and remove the original group
+        if(this.isGroup(grouping)) {
+            symbol.moveToLayer_beforeLayer(grouping.parentGroup(), grouping);
+            grouping.removeFromParent();
+        }
+    },
+
+    _getLayerById: function(id, layer) {
+        if(!layer) {
+            layer = this.page;
+        }
+
+        if(layer.objectID() + '' == id) {
+            return layer;
+        }
+
+        // Loop children
+        var children = layer.children();
+        for(var k=0; k < children.count(); k++) {
+            var child = children[k];
+            if(child.objectID() + '' != layer.objectID() + '') {
+                var target = this._getLayerById(id, child);
+                if(target) {
+                    return target;
+                }
+            }
+        }
+
+        return null;
     },
 
     /**
      *
-     * @param layer
      * @param name
+     * @param layer
      * @returns {*} Returns null if no layer by the given name is found for the provi
      * @private
      */
-    _getTextLayerByName: function(layer, name, depth) {
-        if(typeof depth == 'undefined') {
-            depth = 0;
-        }
-        depth++;
-        if(depth > 5) {
-            return null;
-        }
+    _getTextLayerByName: function(name, layer) {
         if(this.isText(layer) && layer.name() + '' == name) {
             return layer;
         } else if(this.isArtboard(layer) || this.isGroup(layer) || this.isMasterSymbol(layer)) {
@@ -135,7 +200,7 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
             for(var k=0; k < children.count(); k++) {
                 var child = children[k];
                 if(child.objectID() + '' != layer.objectID() + '') {
-                    var target = this._getTextLayerByName(child, name, depth);
+                    var target = this._getTextLayerByName(name, child);
                     if(target) {
                         return target;
                     }
@@ -562,7 +627,7 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
      */
     isGroup: function(layer) {
         var className = layer.class() + '';
-        return className == 'MSGroupLayer' || className == 'MSArtboardGroup';
+        return className == 'MSLayerGroup' || className == 'MSGroupLayer';
     },
 
     /**

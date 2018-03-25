@@ -21,7 +21,8 @@ function command_updateSelectedButtons(context) {
  *
  * @param context
  */
-function command_insertButtonSymbolForSelection(context) {
+function command_convertButtonSymbolForSelection(context) {
     var bs = new ButtonSymbols(context);
-    bs.insertButtonSymbolForSelection();
+    context.document.showMessage('Trying to call it.');
+    bs.initializeSelectionAsButton();
 }
