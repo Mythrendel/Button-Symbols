@@ -86,7 +86,8 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
             var colorBlack = NSColor.colorWithDeviceRed_green_blue_alpha_(0, 0, 0, 1);
             labelLayer.changeTextColorTo(colorBlack);
             labelLayer.adjustFrameToFit();
-            labelLayer.setTextBehaviour(true);
+            labelLayer.setTextBehaviour(0);
+            labelLayer.hasFixedWidth = true;
 
             var labelWidth = labelLayer.frame().width();
             var labelHeight = labelLayer.frame().height();
