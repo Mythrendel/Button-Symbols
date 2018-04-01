@@ -24,6 +24,30 @@
             "handler": "command_convertButtonSymbolForSelection"
         },
         {
+            "script": "command-handlers.js",
+            "name": "Update within Selected Groups",
+            "identifier": "buttonsymbols_updateInGroups",
+            "handler": "command_updateButtonsInSelectedGroups"
+        },
+        {
+            "script": "command-handlers.js",
+            "name": "Update within Selected Artboards",
+            "identifier": "buttonsymbols_updateInArtboards",
+            "handler": "command_updateButtonsInSelectedArtboards"
+        },
+        {
+            "script": "command-handlers.js",
+            "name": "Update within Selected Pages",
+            "identifier": "buttonsymbols_updateInPages",
+            "handler": "command_updateButtonsInSelectedPages"
+        },
+        {
+            "script": "command-handlers.js",
+            "name": "Update All Buttons",
+            "identifier": "buttonsymbols_updateAllButtons",
+            "handler": "command_updateAllButtons"
+        },
+        {
             "script": "action-handlers.js",
             "handlers": {
                 "actions": {}
@@ -34,7 +58,11 @@
         "isRoot": false,
         "items": [
             "buttonsymbols_update",
-            "buttonsymbols_convert"
+            "buttonsymbols_convert",
+            "buttonsymbols_updateInGroups",
+            "buttonsymbols_updateInArtboards",
+            "buttonsymbols_updateInPages",
+            "buttonsymbols_updateAllButtons"
         ],
         "title": "Button Symbols"
     }

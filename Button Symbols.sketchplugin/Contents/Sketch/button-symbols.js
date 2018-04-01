@@ -7,6 +7,7 @@
 const sketch = require('sketch');
 
 @import "mwhite.base-class.js";
+
 @import "mwhite.util.js";
 
 //noinspection JSValidateJSDoc
@@ -46,7 +47,7 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
         }
 
         var isSafeToGroup = true;
-        for(var i=0; i < layers.count(); i++) {
+        for(var i = 0; i < layers.count(); i++) {
             var layer = layers[i];
             if(this.isArtboard(layer) || this.isMasterSymbol(layer)) {
                 isSafeToGroup = false;
@@ -84,7 +85,7 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
             if(buttonSource) {
                 this._initializeAsButtonSymbol(buttonSource);
             } else {
-                this.showMessage('Invalid selection: '+target.name());
+                this.showMessage('Invalid selection: ' + target.name());
             }
         }
     },
@@ -101,9 +102,9 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
         if(!labelLayer) {
             var reservedNames = ['Padding-H', 'Padding-V', 'Position-X', 'Position-Y'];
             var children = target.children();
-            for(var i=0; i < children.length; i++) {
+            for(var i = 0; i < children.length; i++) {
                 var child = children[i];
-                if(this.isText(child) && reservedNames.indexOf(child.name()+'') === -1) {
+                if(this.isText(child) && reservedNames.indexOf(child.name() + '') === -1) {
                     labelLayer = child;
                     break;
                 }
@@ -191,7 +192,7 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
     _convertGroupingToSymbol: function(grouping) {
         var layers = [];
         var children = grouping.children();
-        for(var i=0; i < children.length; i++) {
+        for(var i = 0; i < children.length; i++) {
             if(children.hasOwnProperty(i)) {
                 var layer = children[i];
                 if(layer.objectID() != grouping.objectID() && layer.parentGroup().objectID() == grouping.objectID()) {
@@ -220,7 +221,7 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
 
         // Loop children
         var children = layer.children();
-        for(var k=0; k < children.count(); k++) {
+        for(var k = 0; k < children.count(); k++) {
             var child = children[k];
             if(child.objectID() + '' != layer.objectID() + '') {
                 var target = this._getLayerById(id, child);
@@ -246,7 +247,7 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
         } else if(this.isArtboard(layer) || this.isGroup(layer) || this.isMasterSymbol(layer)) {
             // Loop children
             var children = layer.children();
-            for(var k=0; k < children.count(); k++) {
+            for(var k = 0; k < children.count(); k++) {
                 var child = children[k];
                 if(child.objectID() + '' != layer.objectID() + '') {
                     var target = this._getTextLayerByName(name, child);
@@ -258,6 +259,172 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
         }
 
         return null;
+    },
+
+    _getAllLayersInDocument: function(document) {
+        var allLayers = [];
+
+        var pages = document.pages();
+        for(var i = 0; i < pages.count(); i++) {
+            var page = pages[i];
+            var artboards = page.artboards();
+
+            for(var z = 0; z < artboards.count(); z++) {
+                var artboard = artboards[z];
+                var layers = artboard.layers();
+
+                for(var k = 0; k < layers.count(); k++) {
+                    allLayers.push(layers[k]);
+                }
+            }
+        }
+
+        return allLayers;
+    },
+
+    _findAllButtonsInDocument: function() {
+        var buttons = [];
+
+        var pages = this.document.pages();
+        for(var i = 0; i < pages.count(); i++) {
+            var page = pages[i];
+            var artboards = page.artboards();
+
+            for(var z = 0; z < artboards.count(); z++) {
+                var artboard = artboards[z];
+                buttons = buttons.concat(this._findButtonsInGroup(artboard));
+            }
+        }
+
+        return buttons;
+    },
+
+    updateAllButtons: function() {
+        var layers = this.document.pages();
+
+        if(!layers.count()) {
+            this.showMessage('Please select at least one layer, group, or artboard.');
+            return;
+        }
+
+        for(var k = 0; k < layers.count(); k++) {
+            var layer = layers[k];
+            var buttons = this._findAllButtonsInDocument(layer);
+            this._updateButtons(buttons);
+        }
+        this.showMessage('All buttons updated.');
+    },
+
+    _updateButtons: function(buttons) {
+        for(var i = 0; i < buttons.length; i++) {
+            this._updateButton(buttons[i]);
+        }
+    },
+
+    updateButtonsInSelectedPages: function() {
+        var layers = this.page.children();
+
+        if(!layers.count()) {
+            this.showMessage('Please select a page.');
+            return;
+        }
+
+        for(var k = 0; k < layers.count(); k++) {
+            var layer = layers[k];
+
+            var group = this.getArtboardForLayer(layer);
+
+            if(!group) {
+                continue;
+            }
+
+            var buttons = this._findButtonsInGroup(group);
+            this._updateButtons(buttons);
+        }
+
+        this.showMessage('Buttons updated for selected pages.');
+    },
+
+    updateButtonsInSelectedArtboards: function() {
+        var layers = this.selection;
+
+        if(!layers.count()) {
+            this.showMessage('Please select at least one layer, group, or artboard.');
+            return;
+        }
+
+        for(var k = 0; k < layers.count(); k++) {
+            var layer = layers[k];
+
+            if(!this.isArtboard(layer) && !this.isMasterSymbol(layer)) {
+                continue;
+            }
+
+            var buttons = this._findButtonsInGroup(layer);
+            this._updateButtons(buttons);
+        }
+
+        this.showMessage('Buttons updated for selected artboards.');
+    },
+
+    updateButtonsInSelectedGroups: function() {
+        var layers = this.selection;
+
+        if(!layers.count()) {
+            this.showMessage('Please select at least one layer, group, or artboard.');
+            return;
+        }
+
+        for(var k = 0; k < layers.count(); k++) {
+            var layer = layers[k];
+
+            var group = layer;
+            if(!this.isGroup(layer)) {
+                group = layer.parentGroup();
+            }
+
+            if(!group) {
+                continue;
+            }
+
+            var buttons = this._findButtonsInGroup(group);
+            this._updateButtons(buttons);
+        }
+
+        this.showMessage('Buttons updated for selected groups.');
+    },
+
+    _findButtonsInGroup: function(group) {
+        var layers = group.children();
+        var buttons = [];
+        for(var i = 0; i < layers.count(); i++) {
+            var layer = layers[i];
+            if(this._isButtonSymbolInstance(layer)) {
+                buttons.push(layer);
+            }
+        }
+
+        return buttons;
+    },
+
+    _isButtonSymbolInstance: function(layer) {
+        // Must have Padding-* and Position-* layers
+        if(!this.isSymbol(layer)) {
+            return false;
+        }
+
+        var master = layer.symbolMaster();
+
+        var requiredLayers = ['Position-X', 'Position-Y', 'Padding-H', 'Padding-V'];
+
+        for(var i = 0; i < requiredLayers.length; i++) {
+            var layerName = requiredLayers[i];
+            if(!this._getTextLayerByName(layerName, master)) {
+                return false;
+            }
+        }
+
+        return true;
     },
 
     /**
@@ -274,362 +441,389 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
         }
 
         for(var k = 0; k < layers.count(); k++) {
-            var layer = layers[k];
+            this._updateButton(layers[k]);
+        }
 
-            // Check to see if the layer is a Symbol (this operation only works for symbols)
-            var symbol = this.getSymbolForLayer(layer);
-            if(symbol) {
-                var symbolMaster = symbol.symbolMaster();
-                var masterChildren = symbolMaster.children();
-                var masterChildrenCount = masterChildren.count();
+        this.showMessage('Selected buttons updated.');
+    },
 
-                var overrides = layer.overrides();
+    _updateButton: function(layer) {
+        // Check to see if the layer is a Symbol (this operation only works for symbols)
+        var symbol = this.getSymbolForLayer(layer);
+        if(!symbol) {
+            return;
+        }
+        var symbolMaster = symbol.symbolMaster();
+        var masterChildren = symbolMaster.children();
+        var masterChildrenCount = masterChildren.count();
 
-                if(!overrides) {
-                    continue; // No point continuing - no overrides set
-                }
+        var overrides = layer.overrides();
 
-                // NOTE: If an offset is positive the offset anchor is either top or left. If an offset is negative the offset anchor is bottom or right.
-                var positionX = 0;
-                var positionY = 0;
-                var paddingH = 0;
-                var paddingV = 0;
-                var labelLayer = null;
-                var labelTextOverride = '';
-                var hasLabelPlaceholder = false;
-                var templateLabelWidth = 0;
-                var templateLabelHeight = 0;
-                var templateBackgroundWidth = 0;
-                var templateBackgroundHeight = 0;
+        if(!overrides) {
+            return; // No point continuing - no overrides set
+        }
 
-                // Get template background dimensions directly from the master symbol instead of from a specifically named layer in the symbol which is very restrictive.
-                templateBackgroundWidth = symbolMaster.frame().width();
-                templateBackgroundHeight = symbolMaster.frame().height();
+        // NOTE: If an offset is positive the offset anchor is either top or left. If an offset is negative the offset anchor is bottom or right.
+        var positionX = 0;
+        var positionY = 0;
+        var paddingH = 0;
+        var paddingV = 0;
+        var labelLayer = null;
+        var labelTextOverride = '';
+        var hasLabelPlaceholder = false;
+        var templateLabelWidth = 0;
+        var templateLabelHeight = 0;
+        var templateBackgroundWidth = 0;
+        var templateBackgroundHeight = 0;
 
-                // Loop the children of the symbol to find the layers that provide the override values we want.
-                for(var i = 0; i < masterChildrenCount; i++) {
-                    var childLayer = masterChildren[i];
-                    var childName = childLayer.name() + '';
-                    var childObjectId = childLayer.objectID() + '';
+        // Get template background dimensions directly from the master symbol instead of from a specifically named layer in the symbol which is very restrictive.
+        templateBackgroundWidth = symbolMaster.frame().width();
+        templateBackgroundHeight = symbolMaster.frame().height();
 
-                    switch(childName) {
-                        case 'Label':
-                            if(!this.isText(childLayer)) {
-                                break;
-                            }
-                            if(!hasLabelPlaceholder) {
-                                // Only set this if we have not found a label placeholder yet. Label placeholders override the label itself for obtaining width.
-                                templateLabelWidth = childLayer.frame().width();
-                                templateLabelHeight = childLayer.frame().height();
-                            }
-                            labelLayer = childLayer;
-                            labelTextOverride = overrides[childObjectId];
-                            break;
-                        case 'Label Placeholder':
-                            hasLabelPlaceholder = true;
-                            templateLabelWidth = childLayer.frame().width();
-                            templateLabelHeight = childLayer.frame().height();
-                            break;
-                        case 'Position-X':
-                            if(overrides[childObjectId]) {
-                                positionX = overrides[childObjectId];
-                            }
-                            if(!positionX) {
-                                if(this.isText(childLayer)) {
-                                    positionX = childLayer.stringValue();
-                                }
-                            }
-                            break;
-                        case 'Position-Y':
-                            if(overrides[childObjectId]) {
-                                positionY = overrides[childObjectId];
-                            }
-                            if(!positionY) {
-                                if(this.isText(childLayer)) {
-                                    positionY = childLayer.stringValue();
-                                }
-                            }
-                            break;
-                        case 'Padding-H':
-                            if(overrides[childObjectId]) {
-                                paddingH = overrides[childObjectId];
-                            }
-                            if(!paddingH) {
-                                if(this.isText(childLayer)) {
-                                    paddingH = childLayer.stringValue();
-                                }
-                            }
-                            break;
-                        case 'Padding-V':
-                            if(overrides[childObjectId]) {
-                                paddingV = overrides[childObjectId];
-                            }
-                            if(!paddingV) {
-                                if(this.isText(childLayer)) {
-                                    paddingV = childLayer.stringValue();
-                                }
-                            }
-                            break;
-                        /* This is the old way it was done in v1.3.x
-                        This way was too restrictive with advanced button symbols.
-                        case 'Background':
-                            templateBackgroundWidth = childLayer.frame().width();
-                            templateBackgroundHeight = childLayer.frame().height();
-                            break;*/
-                        default:
-                            // Nothing to do here
+        // Loop the children of the symbol to find the layers that provide the override values we want.
+        for(var i = 0; i < masterChildrenCount; i++) {
+            var childLayer = masterChildren[i];
+            var childName = childLayer.name() + '';
+            var childObjectId = childLayer.objectID() + '';
+
+            switch(childName) {
+                case 'Label':
+                    if(!this.isText(childLayer)) {
+                        break;
                     }
-                }
-
-                // If we don't have a label placeholder and no layer was found named "Label", find the first text layer we can find and use that for the label instead.
-                if(!hasLabelPlaceholder && !labelLayer) {
-                    labelLayer = this._getLabelLayer(symbolMaster);
-                    if(labelLayer) {
-                        labelTextOverride = overrides[labelLayer.objectID() + ''];
-                        templateLabelWidth = labelLayer.frame().width();
-                        templateLabelHeight = labelLayer.frame().height();
+                    if(!hasLabelPlaceholder) {
+                        // Only set this if we have not found a label placeholder yet. Label placeholders override the label itself for obtaining width.
+                        templateLabelWidth = childLayer.frame().width();
+                        templateLabelHeight = childLayer.frame().height();
                     }
-                }
-
-                // Use the master symbol's label text if no override is set.
-                var emptyLabel = false;
-                if(labelLayer) {
-                    var defaultSymbolTextLayerValue = labelLayer.stringValue();
-                    if(labelTextOverride.match(/[\s]+/)) {
-                        // Label override is just one or more spaces; treat it as an empty label.
-                        emptyLabel = true;
-                    } else if(labelTextOverride == '' || labelTextOverride == null) {
-                        // Label override is not set at all so use the default.
-                        labelTextOverride = defaultSymbolTextLayerValue;
+                    labelLayer = childLayer;
+                    labelTextOverride = overrides[childObjectId];
+                    if(labelTextOverride === null) {
+                        labelTextOverride = '';
                     }
-                } else {
-                    emptyLabel = true;
-                }
-
-                if(paddingH != 'custom') {
-                    paddingH = parseInt(paddingH, 10);
+                    break;
+                case 'Label Placeholder':
+                    hasLabelPlaceholder = true;
+                    templateLabelWidth = childLayer.frame().width();
+                    templateLabelHeight = childLayer.frame().height();
+                    break;
+                case 'Position-X':
+                    if(overrides[childObjectId]) {
+                        positionX = overrides[childObjectId];
+                    }
+                    if(!positionX) {
+                        if(this.isText(childLayer)) {
+                            positionX = childLayer.stringValue();
+                        }
+                    }
+                    break;
+                case 'Position-Y':
+                    if(overrides[childObjectId]) {
+                        positionY = overrides[childObjectId];
+                    }
+                    if(!positionY) {
+                        if(this.isText(childLayer)) {
+                            positionY = childLayer.stringValue();
+                        }
+                    }
+                    break;
+                case 'Padding-H':
+                    if(overrides[childObjectId]) {
+                        paddingH = overrides[childObjectId];
+                    }
                     if(!paddingH) {
-                        // No default or override horizontal padding. Calculate it from existing dimensions in the master symbol.
-                        paddingH = (templateBackgroundWidth - templateLabelWidth) / 2;
+                        if(this.isText(childLayer)) {
+                            paddingH = childLayer.stringValue();
+                        }
                     }
-                }
-
-                if(paddingV != 'custom') {
-                    paddingV = parseInt(paddingV, 10);
+                    break;
+                case 'Padding-V':
+                    if(overrides[childObjectId]) {
+                        paddingV = overrides[childObjectId];
+                    }
                     if(!paddingV) {
-                        // No default or override vertical padding. Calculate it from existing dimensions in the master symbol.
-                        paddingV = (templateBackgroundHeight - templateLabelHeight) / 2;
-                    }
-                }
-
-                // If no existing x or y position is set, treat the center position of this symbol as the anchor point for the resize
-                var maintainCenterH = false;
-                var maintainCenterV = false;
-                var centerToParentH = false;
-                var centerToParentV = false;
-                positionX = positionX.toString().trim();
-                positionY = positionY.toString().trim();
-                var positionLeft = false;
-                var positionRight = false;
-                var positionTop = false;
-                var positionBottom = false;
-                var stretchyV = false;
-                var stretchyH = false;
-                var matches = null;
-                switch(positionX) {
-                    case 'center':
-                        centerToParentH = true;
-                        break;
-                    case 'left':
-                    case 'right':
-                        break;
-                    default:
-                        matches = positionX.match(/(-?[\d]+)(,[\s]{0,}(-?[\d]+))?/);
-                        if(matches) {
-                            if(typeof(matches[3]) != 'undefined') {
-                                // Got a paired set of values
-                                stretchyH = true;
-                                positionLeft = parseInt(matches[1], 10);
-                                positionRight = parseInt(matches[3], 10);
-                            } else {
-                                positionX = parseInt(matches[1], 10);
-                                if(!positionX) {
-                                    maintainCenterH = true;
-                                }
-                            }
-                        } else {
-                            maintainCenterH = true;
+                        if(this.isText(childLayer)) {
+                            paddingV = childLayer.stringValue();
                         }
-                        break;
-                }
-                switch(positionY) {
-                    case 'center':
-                        centerToParentV = true;
-                        break;
-                    case 'top':
-                    case 'bottom':
-                        break;
-                    default:
-                        matches = positionY.match(/(-?[\d]+)(,[\s]{0,}(-?[\d]+))?/);
-                        if(matches) {
-                            if(typeof(matches[3]) != 'undefined') {
-                                // Got a paired set of values
-                                stretchyV = true;
-                                positionTop = parseInt(matches[1], 10);
-                                positionBottom = parseInt(matches[3], 10);
-                            } else {
-                                positionY = parseInt(matches[1], 10);
-                                if(!positionY) {
-                                    maintainCenterV = true;
-                                }
-                            }
-                        } else {
-                            maintainCenterV = true;
-                        }
-                        break;
-                }
-
-                var currentSymbolWidth = symbol.frame().width();
-                var currentSymbolHeight = symbol.frame().height();
-
-                var currentSymbolX = symbol.frame().x();
-                var currentSymbolY = symbol.frame().y();
-
-                var skipWidthAdjustment = false;
-                var skipHeightAdjustment = false;
-
-                /*if(emptyLabel === true) {
-                    skipWidthAdjustment = true;
-                    skipHeightAdjustment = true;
-                } else {*/
-                    if(paddingH == 'custom') {
-                        // Adjust padding size so we can safely do math with it.
-                        paddingH = 0;
-                        skipWidthAdjustment = true;
                     }
-                    if(paddingV == 'custom') {
-                        // Adjust padding size so we can safely do math with it.
-                        paddingV = 0;
-                        skipHeightAdjustment = true;
-                    }
-                //}
-
-                // Get the container for this symbol
-                var group = symbol.parentGroup();
-                var groupWidth = group.frame().width();
-                var groupHeight = group.frame().height();
-
-                // Set the master symbol's label text to the value of the override text
-                if(labelLayer) {
-                    labelLayer.setStringValue(labelTextOverride);
-
-                    // Get the updated width and height of the label text
-                    var labelWidth = labelLayer.frame().width();
-                    var labelHeight = labelLayer.frame().height();
-
-                    // Restore the master symbol's label text to its initial value
-                    labelLayer.setStringValue(defaultSymbolTextLayerValue);
-                } else {
-                    labelWidth = templateLabelWidth;
-                    labelHeight = templateLabelHeight;
-                }
-
-                var newSymbolWidth = labelWidth + (paddingH * 2);
-                var newSymbolHeight = labelHeight + (paddingV * 2);
-
-                // Are we setting the width based on a stretchy setting? (pin to left and right)
-                if(stretchyH) {
-                    // Subtract the padding offset values to get the new button symbol width/
-                    newSymbolWidth = groupWidth - (positionLeft + positionRight);
-                    // Make sure the X position is just the left offset. The width of the button will automatically reach the correct location for the right position offset.
-                    positionX = positionLeft;
-                }
-
-                // Are we setting the height based on a stretchy setting? (pin to top and bottom )
-                if(stretchyV) {
-                    // Subtract the padding offset values to get the new button symbol height.
-                    newSymbolHeight = groupHeight - (positionTop + positionBottom);
-                    // Make sure the Y position is just the top offset. The height of the button will automatically reach the correct location for the bottom position offset.
-                    positionY = positionTop;
-                }
-
-                if(skipWidthAdjustment === true) {
-                    // We need this set properly in the position calculations
-                    newSymbolWidth = currentSymbolWidth;
-                } else {
-                    symbol.frame().setWidth(newSymbolWidth);
-                }
-
-                if(skipHeightAdjustment === true) {
-                    // We need this set properly in the position calculations
-                    newSymbolHeight = currentSymbolHeight;
-                } else {
-                    symbol.frame().setHeight(newSymbolHeight);
-                }
-
-                // Reposition the button within its container as required
-                if(!group) {
-                    return;
-                }
-
-                if(maintainCenterH) {
-                    // Figure out the left offset as being changed by 1/2 of the change in button width
-                    positionX = currentSymbolX - ((newSymbolWidth - currentSymbolWidth) / 2);
-                } else if(centerToParentH) {
-                    // Find half the width of the container and subtract half the width of the button
-                    positionX = (group.frame().width() / 2) - (newSymbolWidth / 2);
-                } else {
-                    switch(positionX) {
-                        case 'left':
-                            // Position flush with left edge of parent container
-                            positionX = 0;
-                            break;
-                        case 'right':
-                            // Use (width of container - button width) to position button flush to right edge of parent container
-                            positionX = group.frame().width() - newSymbolWidth;
-                            break;
-                        default:
-                            if(positionX > 0) {
-                                // Offset is from left - do nothing special because this is the standard anchor point Sketch uses on resize
-                            } else if(positionX < 0) {
-                                // Offset is from right; adjust based on current coordinate space
-                                positionX = (group.frame().width() - newSymbolWidth) + positionX;
-                            }
-                            break;
-                    }
-                }
-
-                if(maintainCenterV) {
-                    // Figure out the left offset as being changed by 1/2 of the change in button width
-                    positionY = currentSymbolY - ((newSymbolHeight - currentSymbolHeight) / 2);
-                } else if(centerToParentV) {
-                    // Find half the height of the container and subtract half the height of the button
-                    positionY = (group.frame().height() / 2) - (newSymbolHeight / 2);
-                } else {
-                    switch(positionY) {
-                        case 'top':
-                            // Position flush with top of parent container
-                            positionY = 0;
-                            break;
-                        case 'bottom':
-                            // Use (height of container - button height) to position button flush to bottom of parent container
-                            positionY = group.frame().height() - newSymbolHeight;
-                            break;
-                        default:
-                            if(positionY > 0) {
-                                // Offset is from top - do nothing special because this is the standard anchor point Sketch uses on resize
-                            } else if(positionY < 0) {
-                                // Offset is from bottom ; adjust based on current coordinate space
-                                positionY = (group.frame().height() - newSymbolHeight) + positionY;
-                            }
-                            break;
-                    }
-                }
-
-                symbol.frame().setX(positionX);
-                symbol.frame().setY(positionY);
+                    break;
+                /* This is the old way it was done in v1.3.x
+                This way was too restrictive with advanced button symbols.
+                case 'Background':
+                    templateBackgroundWidth = childLayer.frame().width();
+                    templateBackgroundHeight = childLayer.frame().height();
+                    break;*/
+                default:
+                // Nothing to do here
             }
         }
+
+        // If we don't have a label placeholder and no layer was found named "Label", find the first text layer we can find and use that for the label instead.
+        if(!hasLabelPlaceholder && !labelLayer) {
+            labelLayer = this._getLabelLayer(symbolMaster);
+            if(labelLayer) {
+                labelTextOverride = overrides[labelLayer.objectID() + ''];
+                if(labelTextOverride === null) {
+                    labelTextOverride = '';
+                }
+                templateLabelWidth = labelLayer.frame().width();
+                templateLabelHeight = labelLayer.frame().height();
+            }
+        }
+
+        // Use the master symbol's label text if no override is set.
+        var emptyLabel = false;
+        if(labelLayer) {
+            var defaultSymbolTextLayerValue = labelLayer.stringValue();
+            if(labelTextOverride.match(/[\s]+/)) {
+                // Label override is just one or more spaces; treat it as an empty label.
+                emptyLabel = true;
+            } else if(labelTextOverride == '' || labelTextOverride == null) {
+                // Label override is not set at all so use the default.
+                labelTextOverride = defaultSymbolTextLayerValue;
+            }
+        } else {
+            emptyLabel = true;
+        }
+
+        if(paddingH != 'custom') {
+            paddingH = parseInt(paddingH, 10);
+            if(!paddingH) {
+                // No default or override horizontal padding. Calculate it from existing dimensions in the master symbol.
+                paddingH = (templateBackgroundWidth - templateLabelWidth) / 2;
+            }
+        }
+
+        if(paddingV != 'custom') {
+            paddingV = parseInt(paddingV, 10);
+            if(!paddingV) {
+                // No default or override vertical padding. Calculate it from existing dimensions in the master symbol.
+                paddingV = (templateBackgroundHeight - templateLabelHeight) / 2;
+            }
+        }
+
+        // If no existing x or y position is set, treat the center position of this symbol as the anchor point for the resize
+        var maintainCenterH = false;
+        var maintainCenterV = false;
+        var centerToParentH = false;
+        var centerToParentV = false;
+        positionX = positionX.toString().trim();
+        positionY = positionY.toString().trim();
+        var positionLeft = false;
+        var positionRight = false;
+        var positionTop = false;
+        var positionBottom = false;
+        var stretchyV = false;
+        var stretchyH = false;
+        var matches = null;
+        switch(positionX) {
+            case 'center':
+                centerToParentH = true;
+                break;
+            case 'left':
+            case 'right':
+                break;
+            default:
+                matches = positionX.match(/(-?[\d]+)(,[\s]{0,}(-?[\d]+))?/);
+                if(matches) {
+                    if(typeof(matches[3]) != 'undefined') {
+                        // Got a paired set of values
+                        stretchyH = true;
+                        positionLeft = parseInt(matches[1], 10);
+                        positionRight = parseInt(matches[3], 10);
+                    } else {
+                        positionX = parseInt(matches[1], 10);
+                        if(!positionX) {
+                            maintainCenterH = true;
+                        }
+                    }
+                } else {
+                    maintainCenterH = true;
+                }
+                break;
+        }
+        switch(positionY) {
+            case 'center':
+                centerToParentV = true;
+                break;
+            case 'top':
+            case 'bottom':
+                break;
+            default:
+                matches = positionY.match(/(-?[\d]+)(,[\s]{0,}(-?[\d]+))?/);
+                if(matches) {
+                    if(typeof(matches[3]) != 'undefined') {
+                        // Got a paired set of values
+                        stretchyV = true;
+                        positionTop = parseInt(matches[1], 10);
+                        positionBottom = parseInt(matches[3], 10);
+                    } else {
+                        positionY = parseInt(matches[1], 10);
+                        if(!positionY) {
+                            maintainCenterV = true;
+                        }
+                    }
+                } else {
+                    maintainCenterV = true;
+                }
+                break;
+        }
+
+        var currentSymbolWidth = symbol.frame().width();
+        var currentSymbolHeight = symbol.frame().height();
+
+        var currentSymbolX = symbol.frame().x();
+        var currentSymbolY = symbol.frame().y();
+
+        var skipWidthAdjustment = false;
+        var skipHeightAdjustment = false;
+
+        /*if(emptyLabel === true) {
+            skipWidthAdjustment = true;
+            skipHeightAdjustment = true;
+        } else {*/
+        if(paddingH == 'custom') {
+            // Adjust padding size so we can safely do math with it.
+            paddingH = 0;
+            skipWidthAdjustment = true;
+        }
+        if(paddingV == 'custom') {
+            // Adjust padding size so we can safely do math with it.
+            paddingV = 0;
+            skipHeightAdjustment = true;
+        }
+        //}
+
+        // Get the container for this symbol
+        var group = symbol.parentGroup();
+        var artboard = this.getArtboardForLayer(symbol);
+
+        //clog("Making position relative to: "+ group.name());
+        var groupWidth = group.frame().width();
+        var groupHeight = group.frame().height();
+        /*var groupX = group.absoluteRect().x();
+        var groupY = group.absoluteRect().y();
+        var artboardX = artboard.absoluteRect().x();
+        var artboardY = artboard.absoluteRect().y();*/
+
+        /*var localGroupX = groupX - artboardX;
+        var localGroupY = groupY - artboardY;*/
+
+        // Set the master symbol's label text to the value of the override text
+        if(labelLayer) {
+            labelLayer.setStringValue(labelTextOverride);
+
+            // Get the updated width and height of the label text
+            var labelWidth = labelLayer.frame().width();
+            var labelHeight = labelLayer.frame().height();
+
+            // Restore the master symbol's label text to its initial value
+            labelLayer.setStringValue(defaultSymbolTextLayerValue);
+        } else {
+            labelWidth = templateLabelWidth;
+            labelHeight = templateLabelHeight;
+        }
+
+        var newSymbolWidth = labelWidth + (paddingH * 2);
+        var newSymbolHeight = labelHeight + (paddingV * 2);
+
+        // Are we setting the width based on a stretchy setting? (pin to left and right)
+        if(stretchyH) {
+            // Subtract the padding offset values to get the new button symbol width/
+            newSymbolWidth = groupWidth - (positionLeft + positionRight);
+            // Make sure the X position is just the left offset. The width of the button will automatically reach the correct location for the right position offset.
+            positionX = positionLeft;
+        }
+
+        // Are we setting the height based on a stretchy setting? (pin to top and bottom )
+        if(stretchyV) {
+            // Subtract the padding offset values to get the new button symbol height.
+            newSymbolHeight = groupHeight - (positionTop + positionBottom);
+            // Make sure the Y position is just the top offset. The height of the button will automatically reach the correct location for the bottom position offset.
+            positionY = positionTop;
+        }
+
+        if(skipWidthAdjustment === true) {
+            // We need this set properly in the position calculations
+            newSymbolWidth = currentSymbolWidth;
+        } else {
+            symbol.frame().setWidth(newSymbolWidth);
+        }
+
+        if(skipHeightAdjustment === true) {
+            // We need this set properly in the position calculations
+            newSymbolHeight = currentSymbolHeight;
+        } else {
+            symbol.frame().setHeight(newSymbolHeight);
+        }
+
+        // Reposition the button within its container as required
+        if(!group) {
+            return;
+        }
+
+        if(maintainCenterH) {
+            // Figure out the left offset as being changed by 1/2 of the change in button width
+            positionX = currentSymbolX - ((newSymbolWidth - currentSymbolWidth) / 2);
+        } else if(centerToParentH) {
+            // Find half the width of the container and subtract half the width of the button
+            positionX = (groupWidth / 2) - (newSymbolWidth / 2);
+        } else {
+            switch(positionX) {
+                case 'left':
+                    // Position flush with left edge of parent container
+                    positionX = 0;
+                    break;
+                case 'right':
+                    // Use (width of container - button width) to position button flush to right edge of parent container
+                    positionX = groupWidth - newSymbolWidth;
+                    break;
+                default:
+                    if(positionX > 0) {
+                        // Offset is from left - do nothing special because this is the standard anchor point Sketch uses on resize
+                    } else if(positionX < 0) {
+                        // Offset is from right; adjust based on current coordinate space
+                        positionX = (groupWidth - newSymbolWidth) + positionX;
+                    }
+                    break;
+            }
+        }
+
+        if(maintainCenterV) {
+            // Figure out the left offset as being changed by 1/2 of the change in button width
+            positionY = currentSymbolY - ((newSymbolHeight - currentSymbolHeight) / 2);
+        } else if(centerToParentV) {
+            // Find half the height of the container and subtract half the height of the button
+            positionY = (groupHeight / 2) - (newSymbolHeight / 2);
+        } else {
+            switch(positionY) {
+                case 'top':
+                    // Position flush with top of parent container
+                    positionY = 0;
+                    break;
+                case 'bottom':
+                    // Use (height of container - button height) to position button flush to bottom of parent container
+                    positionY = groupHeight - newSymbolHeight;
+                    break;
+                default:
+                    if(positionY > 0) {
+                        // Offset is from top - do nothing special because this is the standard anchor point Sketch uses on resize
+                    } else if(positionY < 0) {
+                        // Offset is from bottom ; adjust based on current coordinate space
+                        positionY = (groupHeight - newSymbolHeight) + positionY;
+                    }
+                    break;
+            }
+        }
+
+        // Convert local coordinates back to absolute coordinates.
+        /*positionX = artboardX + positionX;
+        positionY = artboardY + positionY;*/
+
+        //clog(positionX, positionY);
+
+        symbol.frame().setX(positionX);
+        symbol.frame().setY(positionY);
     },
 
     /**
@@ -639,6 +833,9 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
      * @returns {boolean}
      */
     isSymbol: function(layer) {
+        if(!layer) {
+            return false;
+        }
         var className = layer.class() + '';
         return className == 'MSSymbolMaster' || className == 'MSSymbolInstance';
     },
@@ -650,6 +847,9 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
      * @returns {boolean}
      */
     isSymbolInstance: function(layer) {
+        if(!layer) {
+            return false;
+        }
         var className = layer.class() + '';
         return className == 'MSSymbolInstance';
     },
@@ -661,6 +861,9 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
      * @returns {boolean}
      */
     isMasterSymbol: function(layer) {
+        if(!layer) {
+            return false;
+        }
         var className = layer.class() + '';
         return className == 'MSSymbolMaster';
     },
@@ -672,6 +875,9 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
      * @returns {boolean}
      */
     isArtboard: function(layer) {
+        if(!layer) {
+            return false;
+        }
         var className = layer.class() + '';
         return className == 'MSArtboardGroup';
     },
@@ -683,6 +889,9 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
      * @returns {boolean}
      */
     isGroup: function(layer) {
+        if(!layer) {
+            return false;
+        }
         var className = layer.class() + '';
         return className == 'MSLayerGroup' || className == 'MSGroupLayer';
     },
@@ -694,6 +903,9 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
      * @returns {boolean}
      */
     isText: function(layer) {
+        if(!layer) {
+            return false;
+        }
         var className = layer.class() + '';
         return className == 'MSTextLayer';
     },
@@ -705,6 +917,9 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
      * @returns {boolean}
      */
     isImage: function(layer) {
+        if(!layer) {
+            return false;
+        }
         var className = layer.class() + '';
         return className == 'MSBitmapLayer';
     },
@@ -716,6 +931,9 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
      * @returns {boolean}
      */
     isShape: function(layer) {
+        if(!layer) {
+            return false;
+        }
         var className = layer.class() + '';
         return className == 'MSShapeGroup';
     },

@@ -23,6 +23,45 @@ function command_updateSelectedButtons(context) {
  */
 function command_convertButtonSymbolForSelection(context) {
     var bs = new ButtonSymbols(context);
-    context.document.showMessage('Trying to call it.');
     bs.initializeSelectionAsButton();
+}
+
+/**
+ * This is the method called when the user runs the plugin from the menu or keyboard shortcut.
+ *
+ * @param context
+ */
+function command_updateButtonsInSelectedPages(context) {
+    var bs = new ButtonSymbols(context);
+    bs.updateButtonsInSelectedPages();
+}
+
+/**
+ * This is the method called when the user runs the plugin from the menu or keyboard shortcut.
+ *
+ * @param context
+ */
+function command_updateButtonsInSelectedArtboards(context) {
+    var bs = new ButtonSymbols(context);
+    bs.updateButtonsInSelectedArtboards();
+}
+
+/**
+ * This is the method called when the user runs the plugin from the menu or keyboard shortcut.
+ *
+ * @param context
+ */
+function command_updateButtonsInSelectedGroups(context) {
+    var bs = new ButtonSymbols(context);
+    bs.updateButtonsInSelectedGroups();
+}
+
+/**
+ * This is the method called when the user runs the plugin from the menu or keyboard shortcut.
+ *
+ * @param context
+ */
+function command_updateAllButtons(context) {
+    var bs = new ButtonSymbols(context);
+    bs.updateAllButtons();
 }
