@@ -1,0 +1,1 @@
+rsync -r "Button Symbols.sketchplugin/Contents/Sketch/" "/Users/mwhite/Library/Application Support/com.bohemiancoding.sketch3/Plugins/Button Symbols.sketchplugin/Contents/Sketch"

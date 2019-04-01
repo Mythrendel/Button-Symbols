@@ -55,23 +55,36 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
         }
 
         if(isSafeToGroup) {
-            var groupName = sketch.UI.getStringFromUser('Enter a name for the new button symbol: ', 'Button');
-            target = new sketch.Group({
-                parent: layers[0].parentGroup(),
-                name: groupName,
-                layers: layers
-            });
-            target = target._object;
-            //target.adjustToFit(); does not work even though a lot of places say it should; including current docs! https://developer.sketchapp.com/reference/api/#adjust-to-fit-its-children
-            target.resizeToFitChildrenWithOption(1); // this seems to work just fine though
+            //var groupName = sketch.UI.getStringFromUser('Enter a name for the new button symbol: ', 'Button');
+            var self = this;
+            sketch.UI.getInputFromUser(
+                'Enter a name for the new button symbol: ',
+                {initialValue: 'Button'},
+                function(error, groupName) {
+                    if(error) {
+                        return;
+                    }
+
+                    target = new sketch.Group({
+                        parent: layers[0].parentGroup(),
+                        name: groupName,
+                        layers: layers
+                    });
+                    target.adjustToFit();
+                    target = target._object;
+                    self._convertTargetToSymbol(target);
+                }
+            );
         } else if(layers.count() === 1) {
             // Only one layer to deal with so we treat it as the group (even if it's an artboard or symbol master)
             target = layers[0];
+            this._convertTargetToSymbol(target);
         } else {
             this.showMessage('Unable to process your selection.');
-            return;
         }
+    },
 
+    _convertTargetToSymbol: function(target) {
         var buttonSource = this.getSymbolMasterForLayer(target);
         if(buttonSource) {
             this._initializeAsButtonSymbol(buttonSource);
@@ -145,6 +158,12 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
             MSLayerMovement.moveToFront([labelLayer]);
             labelLayer.frame().setX(x);
             labelLayer.frame().setY(y);
+        } else {
+            /*// Ensure label layer is aligned center
+            log('centering the text in the layer');
+            log(labelLayer.style());
+            log(sketch.Text.Alignment.center);
+            labelLayer.style().alignment = sketch.Text.Alignment.center;*/
         }
 
         // Add the Padding-*, Position-* layers as required
@@ -199,6 +218,7 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                 }
             }
         }
+
         layers = MSLayerArray.arrayWithLayers(layers);
         var symbol = MSSymbolCreator.createSymbolFromLayers_withName_onSymbolsPage(layers, grouping.name(), true);
 
