@@ -112,7 +112,7 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
         var labelLayer = this._getTextLayerByName('Label', target);
         // No valid "Label" layer found, is there any text layer we can use instead?
         if(!labelLayer) {
-            var reservedNames = ['Padding-H', 'Padding-V', 'Position-X', 'Position-Y'];
+            var reservedNames = ['Padding-H', 'Padding-V', 'Position-X', 'Position-Y', 'Anchor'];
             var children = target.children();
             for(var i=0; i < children.length; i++) {
                 var child = children[i];
@@ -321,6 +321,8 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                 var templateLabelHeight = 0;
                 var templateBackgroundWidth = 0;
                 var templateBackgroundHeight = 0;
+                var maintainOffsetX = false;
+                var maintainOffsetY = false;
 
                 // Get template background dimensions directly from the master symbol instead of from a specifically named layer in the symbol which is very restrictive.
                 templateBackgroundWidth = symbolMaster.frame().width();
@@ -390,6 +392,40 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                                 }
                             }
                             break;
+                        case 'Anchor':
+                            // If there is a text layer named "Anchor", use its value as an X,Y coordinate pair for the default anchoring mechanism for the button when it resizes. (Default is center)
+                            var anchorPoint = null;
+                            var anchorX = null;
+                            var anchorY = null;
+                            if(overrides[childObjectId]) {
+                                anchorPoint = overrides[childObjectId];
+                            }
+                            if(!anchorPoint) {
+                                if(this.isText(childLayer)) {
+                                    anchorPoint = childLayer.stringValue();
+                                }
+                            }
+                            matches = anchorPoint.match(/(-?[\da-z]+)(,[\s]{0,}(-?[\da-z]+))?/);
+                            if(matches) {
+                                if(typeof(matches[1]) != 'undefined') {
+                                    anchorX = parseInt(matches[1], 10);
+                                    if(!anchorX || isNaN(anchorX)) {
+                                        anchorX = matches[1];
+                                    }
+                                    anchorY = parseInt(matches[3], 10);
+                                    if(!anchorY || isNaN(anchorY)) {
+                                        anchorY = matches[3];
+                                    }
+                                }
+                            }
+                            if(anchorX == 'default') {
+                                maintainOffsetX = true;
+                            }
+
+                            if(anchorY == 'default') {
+                                maintainOffsetY = true;
+                            }
+                            break;
                         /* This is the old way it was done in v1.3.x
                         This way was too restrictive with advanced button symbols.
                         case 'Background':
@@ -399,6 +435,13 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                         default:
                             // Nothing to do here
                     }
+                }
+
+                if(!positionX) {
+                    positionX = anchorX;
+                }
+                if(!positionY) {
+                    positionY = anchorY;
                 }
 
                 // If we don't have a label placeholder and no layer was found named "Label", find the first text layer we can find and use that for the label instead.
@@ -415,12 +458,12 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                 var emptyLabel = false;
                 if(labelLayer) {
                     var defaultSymbolTextLayerValue = labelLayer.stringValue();
-                    if(labelTextOverride.match(/[\s]+/)) {
-                        // Label override is just one or more spaces; treat it as an empty label.
-                        emptyLabel = true;
-                    } else if(labelTextOverride == '' || labelTextOverride == null) {
+                    if(labelTextOverride == '' || labelTextOverride == null) {
                         // Label override is not set at all so use the default.
                         labelTextOverride = defaultSymbolTextLayerValue;
+                    } else if(labelTextOverride.match(/[\s]+/)) {
+                        // Label override is just one or more spaces; treat it as an empty label.
+                        emptyLabel = true;
                     }
                 } else {
                     emptyLabel = true;
@@ -561,6 +604,7 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                 if(stretchyH) {
                     // Subtract the padding offset values to get the new button symbol width/
                     newSymbolWidth = groupWidth - (positionLeft + positionRight);
+
                     // Make sure the X position is just the left offset. The width of the button will automatically reach the correct location for the right position offset.
                     positionX = positionLeft;
                 }
@@ -592,7 +636,10 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                     return;
                 }
 
-                if(maintainCenterH) {
+                if(maintainOffsetX) {
+                    // Nothing to do here; let sketch behave normally
+                    return;
+                } else if(maintainCenterH) {
                     // Figure out the left offset as being changed by 1/2 of the change in button width
                     positionX = currentSymbolX - ((newSymbolWidth - currentSymbolWidth) / 2);
                 } else if(centerToParentH) {
@@ -619,7 +666,10 @@ var ButtonSymbols = Mwhite.BaseClass.extend({
                     }
                 }
 
-                if(maintainCenterV) {
+                if(maintainOffsetY) {
+                    // Nothing to do here; let sketch behave normally
+                    return;
+                } else if(maintainCenterV) {
                     // Figure out the left offset as being changed by 1/2 of the change in button width
                     positionY = currentSymbolY - ((newSymbolHeight - currentSymbolHeight) / 2);
                 } else if(centerToParentV) {
