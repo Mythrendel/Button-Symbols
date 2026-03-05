@@ -1,3 +1,7 @@
+# ⚠️ Archived project
+
+This repository is no longer actively maintained.
+
 # Button-Symbols
 Sketch plugin using symbol overrides to re-label, re-size, and re-position buttons. Supports nested symbols, complex button systems, icons and more!
 
